@@ -1,0 +1,37 @@
+[
+  {
+    "Name": "Tiago",
+    "NumGames": 0,
+    "NumVictory": 3,
+    "NumDraw": 0,
+    "NumLoss": 0
+  },
+  {
+    "Name": "andre",
+    "NumGames": 0,
+    "NumVictory": 2,
+    "NumDraw": 0,
+    "NumLoss": 0
+  },
+  {
+    "Name": "diogo",
+    "NumGames": 0,
+    "NumVictory": 2,
+    "NumDraw": 0,
+    "NumLoss": 0
+  },
+  {
+    "Name": "tiago",
+    "NumGames": 0,
+    "NumVictory": 0,
+    "NumDraw": 0,
+    "NumLoss": 0
+  },
+  {
+    "Name": "joao",
+    "NumGames": 0,
+    "NumVictory": 0,
+    "NumDraw": 0,
+    "NumLoss": 0
+  }
+]
