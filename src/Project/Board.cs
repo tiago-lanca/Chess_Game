@@ -13,7 +13,6 @@ class Board
     #endregion
 
     #region Functions
-
     static public void PrintBoard(Piece[,] board) {
         if (_IsNewGame){
             InitializePieces(PieceTeam.White);
@@ -70,6 +69,5 @@ class Board
             board[rowPawn, col] = new Piece(PieceType.Pawn, rowPawn, col, team, _isWhite ? $"WP{col+1}" : $"BP{col+1}");
         }
     }
-
     #endregion
 }

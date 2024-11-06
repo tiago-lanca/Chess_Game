@@ -4,7 +4,7 @@
 //findPiece(board, "BP8", letters);
 //movePiece(board, "C7", "C5");
 
-Player.DeserializePlayerData(); // Carrega lista de jogadores no inicio da aplicação
+//Player.DeserializePlayerData(); // Carrega lista de jogadores no inicio da aplicação
 
 do{    
     Console.Write("Comando: ");
@@ -51,10 +51,12 @@ void CheckCommand(string command){
 
         case "L": // Ler Jogo
             if (_HasRequiredInputs(words.Length, 2))
-            Game.LoadGame(words[1]);
+            Game.LoadFile(words[1]);
             else Console.WriteLine("Instrução inválida.\n");
             break;
-
+        case "clear": // Limpar Consola
+            Console.Clear();
+            break;
         default:
             Console.WriteLine("Instrução inválida.\n");
             break;

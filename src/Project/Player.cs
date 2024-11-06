@@ -19,23 +19,19 @@ class Player
     #region Functions
     public static void ListPlayers(){
         if(_IsPlayerListEmpty()){ // Se a lista estiver vazia, desserializa os dados e adiciona à lista "players"
-            DeserializePlayerData();
-            ShowAllPlayers(); // Mostra cada objeto da classe Player
+            Console.WriteLine("Lista está vazia. Faz Load de um ficheiro.\n");
         }
         else ShowAllPlayers();
     }
 
     public static void RegisterPlayer(string name, string[] words){
         if(words.Length > 2) Console.WriteLine("Inserir nome sem espaços\n");
-        else{
-            if(_IsPlayerListEmpty()){
-                DeserializePlayerData();
-            }       
+        else{     
             if(!players.Exists(player => player.Name == name)){        
                 //Instancia novo jogador e adiciona à lista "players"
                 Player player = new Player { Name = name };
                 players.Add(player);
-                SerializePlayerData(); // Serializa os dados para o ficheiro json
+                //SerializePlayerData(); // Serializa os dados para o ficheiro json
                 Console.WriteLine("Jogador registado com sucesso.\n");
             }
             else{ Console.WriteLine("Jogador existente.\n"); }
@@ -66,7 +62,7 @@ class Player
         }
         //players.ForEach(n => Console.WriteLine($"{n.name} NumJogos: {n.numJogos} NumVitorias: {n.numVitorias} NumEmpates: {n.numEmpates} NumDerrotas: {n.numDerrotas}\n")); 
     }
-
+       
     // String default quando se chama o objeto da classe Player
     public override string ToString()
     {

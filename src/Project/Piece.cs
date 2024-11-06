@@ -12,19 +12,19 @@ class Piece
    
     public Piece(PieceType type, int x, int y, PieceTeam team, string placeholder){
         Type = type;
-        Location.X = x;
-        Location.Y = y;
+        Location.Row = x;
+        Location.Col = y;
         Team = team;
         PlaceHolder = placeholder;
     }    
 }
 public class Location { 
-    public int X { get; set; }
-    public int Y { get; set; }
+    public int Row { get; set; }
+    public int Col { get; set; }
 
     public override string ToString()
     {
-        return $"Row: {X} / Col: {Y}";
+        return $"Row: {Row} / Col: {Col}";
     }
 }
 
