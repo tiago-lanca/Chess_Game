@@ -21,6 +21,20 @@
     "NumLoss": 0
   },
   {
+    "Name": "joao",
+    "NumGames": 0,
+    "NumVictory": 0,
+    "NumDraw": 0,
+    "NumLoss": 0
+  },
+  {
+    "Name": "paulo",
+    "NumGames": 0,
+    "NumVictory": 0,
+    "NumDraw": 0,
+    "NumLoss": 0
+  },
+  {
     "Name": "tiago",
     "NumGames": 0,
     "NumVictory": 0,
@@ -28,7 +42,7 @@
     "NumLoss": 0
   },
   {
-    "Name": "joao",
+    "Name": "rodrigo",
     "NumGames": 0,
     "NumVictory": 0,
     "NumDraw": 0,

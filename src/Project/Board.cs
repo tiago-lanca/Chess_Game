@@ -3,32 +3,45 @@ using System.IO.Compression;
 
 class Board
 {
+    #region Variables
+
     readonly static char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     readonly static int[] numbers = {1, 2, 3, 4, 5, 6, 7, 8};
     static public Piece[,] board { get;set; } = new Piece[8,8];
+    public static bool _IsNewGame = true;
 
-    static public void PrintBoard(Piece[,] board){
-        DisplayBoard(PieceTeam.White);
-        DisplayBoard(PieceTeam.Black);
+    #endregion
+
+    #region Functions
+
+    static public void PrintBoard(Piece[,] board) {
+        if (_IsNewGame){
+            InitializePieces(PieceTeam.White);
+            InitializePieces(PieceTeam.Black);
+        }
 
         Console.Write("  ");
-        foreach(char letter in letters){
+        foreach (char letter in letters)
+        {
             Console.Write($" {letter}\t");
         }
         Console.WriteLine("");
 
-        for(int line = 0; line < board.GetLength(0); line++){
+        for (int line = 0; line < board.GetLength(0); line++)
+        {
             Console.Write($"{numbers[line]} ");
-            for(int col = 0; col < board.GetLength(1); col++){
+            for (int col = 0; col < board.GetLength(1); col++)
+            {
                 if (board[line, col] != null)
-                    Console.Write(board[line, col].PieceText + "\t");
+                    Console.Write(board[line, col].PlaceHolder + "\t");
                 else Console.Write("   \t");
             }
             Console.WriteLine("");
         }
         Console.WriteLine("");
     }
-    static public void DisplayBoard(PieceTeam team){
+    
+    static public void InitializePieces(PieceTeam team){
         int row, rowPawn;
         bool _isWhite = true;
         if(team == PieceTeam.White){
@@ -54,7 +67,9 @@ class Board
         board[row, 4] = new Piece(PieceType.King, row, 4, team, _isWhite ? "WK2" : "BK2");
 
         for(int col = 0; col < 8; col++){
-            board[rowPawn, col] = new Piece(PieceType.Pawn, row, col, team, _isWhite ? $"WP{col+1}" : $"BP{col+1}");
+            board[rowPawn, col] = new Piece(PieceType.Pawn, rowPawn, col, team, _isWhite ? $"WP{col+1}" : $"BP{col+1}");
         }
     }
+
+    #endregion
 }
