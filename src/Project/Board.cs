@@ -7,9 +7,8 @@ class Board
 
     readonly static char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     readonly static int[] numbers = {1, 2, 3, 4, 5, 6, 7, 8};
-    static public Piece[,] board { get;set; } = new Piece[8,8];
+    static public Piece[,] board { get; set; } = new Piece[8,8];
     public static bool _IsNewGame = true;
-
     #endregion
 
     #region Functions
@@ -19,21 +18,23 @@ class Board
             InitializePieces(PieceTeam.Black);
         }
 
-        Console.Write("  ");
+        Console.Write("   ");
         foreach (char letter in letters)
         {
-            Console.Write($" {letter}\t");
+            Console.Write($" {letter}   ");
         }
         Console.WriteLine("");
-
+            
         for (int line = 0; line < board.GetLength(0); line++)
         {
-            Console.Write($"{numbers[line]} ");
+            Console.Write($"{numbers[line]}  ");
             for (int col = 0; col < board.GetLength(1); col++)
             {
                 if (board[line, col] != null)
-                    Console.Write(board[line, col].PlaceHolder + "\t");
-                else Console.Write("   \t");
+                    Console.Write(board[line, col].PlaceHolder);
+                else Console.Write("   ");
+
+                Console.Write("  ");
             }
             Console.WriteLine("");
         }
@@ -58,7 +59,6 @@ class Board
 
         board[row, 1] = new Piece(PieceType.Knight, row, 1, team, _isWhite ? "WH1" : "BH1");
         board[row, 6] = new Piece(PieceType.Knight, row, 6, team, _isWhite ? "WH2" : "BH2");
-
         board[row, 2] = new Piece(PieceType.Bishop, row, 2, team, _isWhite ? "WB1" : "BB1");
         board[row, 5] = new Piece(PieceType.Bishop, row, 5, team, _isWhite ? "WB2" : "BB2");
 

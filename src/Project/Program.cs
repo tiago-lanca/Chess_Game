@@ -1,4 +1,6 @@
-﻿string input;
+﻿using System.ComponentModel.Design;
+
+string input;
 
 //printBoard(board, letters, numbers);
 //findPiece(board, "BP8", letters);
@@ -6,7 +8,10 @@
 
 //Player.DeserializePlayerData(); // Carrega lista de jogadores no inicio da aplicação
 
-do{    
+AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+                  
+do
+{    
     Console.Write("Comando: ");
     input = Console.ReadLine();
     Console.WriteLine();
@@ -14,20 +19,19 @@ do{
 }
 while(input != " ");
 
-
 void CheckCommand(string command){
     string[] words = command.Split(' ');
 
     switch(words[0]){
         case "RJ": // Registar Jogador
             if (_HasRequiredInputs(words.Length, 2))
-                Player.RegisterPlayer(words[1], words);
+                PlayerList.RegisterPlayer(words[1], words);
             else Console.WriteLine("Instrução inválida.\n");
             break;
         
         case "LJ": // Listar Jogadores
             if (_HasRequiredInputs(words.Length, 1))
-                Player.ListPlayers();
+                PlayerList.ListPlayers();
             else Console.WriteLine("Instrução inválida.\n");
             break;
 
@@ -38,14 +42,26 @@ void CheckCommand(string command){
             break;
 
         case "MP": // Mover Peça
-            if (_HasRequiredInputs(words.Length, 3))
-                Game.MovePiece(words[1], words[2]);
+            if (_HasRequiredInputs(words.Length, 4))
+                Game.MovePiece(words[1], words[2], words[3]);
             else Console.WriteLine("Instrução inválida.\n");
+            break;
+
+        case "DJ": // Detalhes de jogo
+            if(Game.board != null)  
+                Board.PrintBoard(Game.board);
+            else { Console.WriteLine("Não existe jogo em curso.\n"); }
+            break;
+
+        case "D": // Desistir de jogo
+            if (words.Length > 2)
+                Game.ForfeitGame(words[1], words[2]);
+            else Game.ForfeitGame(words[1]);
             break;
         
         case "G": // Gravar 
             if (_HasRequiredInputs(words.Length, 2))
-             Game.SaveGame(words[1]);
+             Game.SaveFile(words[1]);
             else Console.WriteLine("Instrução inválida.\n");
             break;
 
@@ -68,6 +84,13 @@ bool _HasRequiredInputs(int nr_inputs, int nr_reqInputs)
     return nr_inputs == nr_reqInputs;
 }
 
+// Gravar no ficheiro dado, quando o utilizador sai da aplicação sem gravar
+static void OnProcessExit(object sender, EventArgs e)
+{
+    // Codigo que corre quando aplicação está prestes a fechar.
+    Console.WriteLine("A aplicação está a gravar os dados ...");
+    Game.SaveFileExiting();
+}
 /*void movePiece(string[,] board, string from, string to)
 {
     // From = "C7",  To = "C5"
