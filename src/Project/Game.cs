@@ -1,7 +1,10 @@
+using Chess_Game.src.Project;
+using Chess_Game.src.Project.PiecesType;
 using System.IO.Compression;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 class Game()
 {
@@ -11,14 +14,14 @@ class Game()
 
     readonly static char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     readonly static int[] numbers = {1, 2, 3, 4, 5, 6, 7, 8};
-    static public Piece[,]? board { get;set; }
+    public static Piece[,]? board { get;set; }
     public static bool _IsNewGame = true;
     public static bool Turn = false;
     public static bool _IsGameInProgress = false;
     public static string[] gameInProgress_Players = new string[2];
     public static string jsonFile;
     public static bool player1Exists, player2Exists, endingGame = false;
-
+    public static int Nr_Rounds { get; set; } = 0;
 
     #endregion
 
@@ -89,7 +92,11 @@ class Game()
             board = boardList   //
         };
 
-        var options = new JsonSerializerOptions { WriteIndented = true }; // Identação no ficheiro json
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Converters = { new PieceConverter() }
+        }; // Identação no ficheiro json
         string jsonString = JsonSerializer.Serialize(serializableFile, options);
         File.WriteAllText($"{namefile}.json", jsonString);
         
@@ -109,7 +116,12 @@ class Game()
 
                 if (gameJson != string.Empty)
                 {
-                    var options = new JsonSerializerOptions { IncludeFields = true };
+                    var options = new JsonSerializerOptions
+                    {
+                        IncludeFields = true,
+                        PropertyNameCaseInsensitive = true,
+                        Converters = { new PieceConverter() }
+                    };
                     var activeGame = JsonSerializer.Deserialize<SerializableFile>(gameJson, options);
                     PlayerList.players = activeGame.players;
 
@@ -150,7 +162,7 @@ class Game()
         else Console.WriteLine("Existe um jogo em curso.\n");
     }
 
-    public static void MovePiece(string playerName, string fromPos, string toPos)
+    public static void Command_MovePiece(string playerName, string fromPos, string toPos)
     {
         if (_IsGameInProgress)
         {
@@ -161,16 +173,16 @@ class Game()
                     Piece piece;
 
                     Location fromLocation = new Location
-                    {
-                        Row = GetRowCoord(int.Parse(fromPos.Substring(1))),
-                        Col = GetColCoord(char.ToUpper(fromPos[0]))
-                    };
+                    (
+                        GetRowCoord(int.Parse(fromPos.Substring(1))),
+                        GetColCoord(char.ToUpper(fromPos[0]))
+                    );
 
                     Location toLocation = new Location
-                    {
-                        Row = GetRowCoord(int.Parse(toPos.Substring(1))),
-                        Col = GetColCoord(char.ToUpper(toPos[0]))
-                    };
+                    (
+                        GetRowCoord(int.Parse(toPos.Substring(1))),
+                        GetColCoord(char.ToUpper(toPos[0]))
+                    );
 
                     bool fromCoordInBounds = IsInBounds(fromLocation.Row, board.GetLength(1)) && IsInBounds(fromLocation.Col, board.GetLength(0));
                     bool toCoordInBounds = IsInBounds(toLocation.Row, board.GetLength(1)) && IsInBounds(toLocation.Col, board.GetLength(0));
@@ -180,22 +192,15 @@ class Game()
                     {
                         piece = board[fromLocation.Row, fromLocation.Col];
                         if (piece != null) {
-                            List<string> possibleMoves = new List<string>();
-
-                            /*piece = board[fromLocation.Row, fromLocation.Col];
-                            // Altera a peça de localização, e coloca null onde estava anteriormente
-                            board[toLocation.Row, toLocation.Col] = piece;
-                            board[toLocation.Row, toLocation.Col].Location.Col = toLocation.Col;
-                            board[toLocation.Row, toLocation.Col].Location.Row = toLocation.Row;
-                            board[fromLocation.Row, fromLocation.Col] = null;*/
 
                             switch (piece.Type)
                             {
                                 case PieceType.Pawn:
-                                    //toLocation.Col == fromLocation.Col;
-                                    int row = fromLocation.Row + 1;
+                                    piece.MovePiece(fromLocation, toLocation, fromPos, toPos, piece.Team.Value , board);
+                                    break;
 
-                                    Pawn.MovePawn(fromLocation, toLocation, fromPos, toPos, piece.Team.Value , board);
+                                case PieceType.Rook:
+                                    piece.MovePiece(fromLocation, toLocation, fromPos, toPos, piece.Team.Value, board); 
                                     break;
 
                                 default:
@@ -231,16 +236,13 @@ class Game()
                         Player PlayerWon = PlayerList.players.Find(player => player.Name == playerWon.ElementAt(0));
                         PlayerLost.NumLoss++;
                         PlayerWon.NumVictory++;
-                        Player1 = null;
-                        Player2 = null;
-                        endingGame = true;
+                        
                         Console.WriteLine($"{player1} desistiu.\n");
                         Console.WriteLine("Jogo terminado com sucesso.\n");
 
-                        board = null;
-                        Board.board = null;
-                        Board._IsNewGame = true;
-                        _IsGameInProgress = false;
+                        ResetAllData(); // Faz reset dos dados para um novo jogo
+
+                        endingGame = true;
                         SaveFile(jsonFile);
                         endingGame = false;
 
@@ -269,8 +271,8 @@ class Game()
                         Player2.NumDraw++;
                         Console.WriteLine($"{player1} e {player2} empataram.\n");
 
-                        board = null;
-                        _IsGameInProgress = false;
+                        ResetAllData(); // Faz reset dos dados para um novo jogo
+
                         endingGame = true;
                         SaveFile(jsonFile);
                         endingGame = false;
@@ -286,19 +288,26 @@ class Game()
     {
         return x - 'A';
     }
-
     public static int GetRowCoord(int y)
     {
         return y - 1;
     }
 
     public static int GetTurn(bool turn) { return Convert.ToInt16(turn); }
-
-    static public bool IsInBounds(int coord, int limit)
+    public static bool IsInBounds(int coord, int limit)
     {
         return (coord + 1 >= 0) && (coord + 1 <= limit);
     }
 
+    public static void ResetAllData()
+    {
+        Player1 = null;
+        Player2 = null;
+        board = null;
+        Board._IsNewGame = true;
+        _IsGameInProgress = false;
+    }
+    
     #endregion
 
     // Classe para entrar como objeto no JsonSerializer

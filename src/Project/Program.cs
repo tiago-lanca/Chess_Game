@@ -8,7 +8,7 @@ string input;
 
 //Player.DeserializePlayerData(); // Carrega lista de jogadores no inicio da aplicação
 
-AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+//AppDomain.CurrentDomain.ProcessExit += OnProcessExit; // Autosave ao sair da aplicação
                   
 do
 {    
@@ -43,7 +43,7 @@ void CheckCommand(string command){
 
         case "MP": // Mover Peça
             if (_HasRequiredInputs(words.Length, 4))
-                Game.MovePiece(words[1], words[2], words[3]);
+                Game.Command_MovePiece(words[1], words[2], words[3]);
             else Console.WriteLine("Instrução inválida.\n");
             break;
 

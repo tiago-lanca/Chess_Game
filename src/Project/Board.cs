@@ -54,19 +54,19 @@ class Board
             rowPawn = 1;
         }
 
-        board[row, 0] = new Piece(PieceType.Rook, row, 0, team, _isWhite ? "WR1" : "BR1");
-        board[row, 7] = new Piece(PieceType.Rook, row, 7, team, _isWhite ? "WR2" : "BR2");
+        board[row, 0] = new Rook(PieceType.Rook, new Location(row, 0), team, _isWhite ? "WR1" : "BR1");
+        board[row, 7] = new Rook(PieceType.Rook, new Location(row, 7), team, _isWhite ? "WR2" : "BR2");
 
-        board[row, 1] = new Piece(PieceType.Knight, row, 1, team, _isWhite ? "WH1" : "BH1");
-        board[row, 6] = new Piece(PieceType.Knight, row, 6, team, _isWhite ? "WH2" : "BH2");
-        board[row, 2] = new Piece(PieceType.Bishop, row, 2, team, _isWhite ? "WB1" : "BB1");
-        board[row, 5] = new Piece(PieceType.Bishop, row, 5, team, _isWhite ? "WB2" : "BB2");
+        board[row, 1] = new Knight(PieceType.Knight, new Location(row, 1), team, _isWhite ? "WH1" : "BH1");
+        board[row, 6] = new Knight(PieceType.Knight, new Location(row, 6), team, _isWhite ? "WH2" : "BH2");
+        board[row, 2] = new Bishop(PieceType.Bishop, new Location(row, 2), team, _isWhite ? "WB1" : "BB1");
+        board[row, 5] = new Bishop(PieceType.Bishop, new Location(row, 5), team, _isWhite ? "WB2" : "BB2");
 
-        board[row, 3] = new Piece(PieceType.Queen, row, 3, team, _isWhite ? "WQ1" : "BQ1");
-        board[row, 4] = new Piece(PieceType.King, row, 4, team, _isWhite ? "WK2" : "BK2");
+        board[row, 3] = new Queen(PieceType.Queen, new Location(row, 3), team, _isWhite ? "WQ1" : "BQ1");
+        board[row, 4] = new King(PieceType.King, new Location(row, 4), team, _isWhite ? "WK2" : "BK2");
 
         for(int col = 0; col < 8; col++){
-            board[rowPawn, col] = new Piece(PieceType.Pawn, rowPawn, col, team, _isWhite ? $"WP{col+1}" : $"BP{col+1}");
+            board[rowPawn, col] = new Pawn(PieceType.Pawn, new Location(rowPawn,col), team, _isWhite ? $"WP{col + 1}" : $"BP{col + 1}");
         }
     }
     #endregion

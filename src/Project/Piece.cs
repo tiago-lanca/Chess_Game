@@ -1,26 +1,39 @@
 using System.Net;
+using System.Text.Json.Serialization;
 
-class Piece
+public class Piece
 {
     public PieceType? Type  {get; set;}
-    public Location? Location { get; set; } = new Location();
+
+    public Location? Location { get; set; } 
     public PieceTeam? Team { get; set; }
-
     public string PlaceHolder {get; set;}
-
+    public bool isAlive { get; set; } = true;
+    public bool SpecialOperation_ON { get; set; } = true;
+    public int Nr_Movements { get; set; } = 0;
     public Piece() { }
-   
-    public Piece(PieceType type, int x, int y, PieceTeam team, string placeholder){
+
+    [JsonConstructor]
+    public Piece(PieceType type, Location location, PieceTeam team, string placeholder){
         Type = type;
-        Location.Row = x;
-        Location.Col = y;
+        Location = location;
         Team = team;
         PlaceHolder = placeholder;
-    }    
+    } 
+    
+    public virtual void MovePiece(Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, PieceTeam team, Piece[,] board)
+    {
+
+    }
 }
 public class Location { 
     public int Row { get; set; }
     public int Col { get; set; }
+
+    public Location(int row, int col) {
+        Row = row;
+        Col = col;
+    }
 
     public override string ToString()
     {
