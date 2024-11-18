@@ -196,14 +196,31 @@ class Game()
                             switch (piece.Type)
                             {
                                 case PieceType.Pawn:
-                                    piece.MovePiece(fromLocation, toLocation, fromPos, toPos, piece.Team.Value , board);
+                                    piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
                                     break;
 
                                 case PieceType.Rook:
-                                    piece.MovePiece(fromLocation, toLocation, fromPos, toPos, piece.Team.Value, board); 
+                                    piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board); 
+                                    break;
+
+                                case PieceType.Knight:
+                                    piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    break;
+
+                                case PieceType.Bishop:
+                                    piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    break;
+
+                                case PieceType.Queen:
+                                    piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    break;
+
+                                case PieceType.King:
+                                    piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
                                     break;
 
                                 default:
+                                    Console.WriteLine("Comando inválido.\n");
                                     break;
                             }                            
                         }
@@ -288,16 +305,12 @@ class Game()
     {
         return x - 'A';
     }
-    public static int GetRowCoord(int y)
-    {
-        return y - 1;
-    }
+    public static int GetRowCoord(int y) =>  y - 1;
+    // return y - 1;
+    
 
     public static int GetTurn(bool turn) { return Convert.ToInt16(turn); }
-    public static bool IsInBounds(int coord, int limit)
-    {
-        return (coord + 1 >= 0) && (coord + 1 <= limit);
-    }
+    public static bool IsInBounds(int coord, int limit) => (coord + 1 >= 0) && (coord + 1 <= limit);
 
     public static void ResetAllData()
     {
