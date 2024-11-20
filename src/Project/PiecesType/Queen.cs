@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-class Queen : Piece
+public class Queen : Piece
 {
     public bool FirstMove { get; set; } = true;
     public Queen() { }
@@ -29,23 +29,46 @@ class Queen : Piece
         int col = fromLocation.Col;
         Piece nextPiece;
 
-        // Calculo de movimentação vertical da Rainha
-
+        // Calculo de movimentação vertical para cima da Rainha
         for (int row = fromLocation.Row - 1; row >= 0; row--)
         {
             nextPiece = board[row, col];
-            if (nextPiece == null || piece.Team != nextPiece.Team)
+
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
                 possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+
+            else if (nextPiece != null && piece.Team != nextPiece.Team)
+            {
+                possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+                break;
+            }            
 
             else break;
         }
 
+        // Calculo de movimentação vertical para baixo da Rainha
         for (int row = fromLocation.Row + 1; row < board.GetLength(0); row++)
         {
             nextPiece = board[row, col];
-            if (nextPiece == null || piece.Team != nextPiece.Team)
+
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+
+            // Verifica se a proxima peça é nulo
+            if (nextPiece == null)
                 possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
 
+            // Verifica se a proxima peça não é nula e de equipa inimiga, se for dá break para sair do loop for
+            else if (nextPiece != null && piece.Team != nextPiece.Team)
+            {
+                possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+                break;
+            }         
+            
             else break;
         }        
 
@@ -64,12 +87,21 @@ class Queen : Piece
             // Calculo do char da coluna com o percorrer do ciclo for
             int column = input_FromPos[0] + (col - fromLocation.Col);
 
-            if (nextPiece == null || piece.Team != nextPiece.Team)
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
+                possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}");
+
+            else if (nextPiece != null && piece.Team != nextPiece.Team)
             {
                 possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}"); // Representação visual UI coord.
-            }
+                break;
+            }            
+
             else break;
         }
+
         // Calculo para movimentação para a esquerda
         for (int col = fromLocation.Col - 1; col >= 0; col--)
         {
@@ -77,12 +109,19 @@ class Queen : Piece
             // Calculo do char da coluna com o percorrer do ciclo for
             int column = input_FromPos[0] - (fromLocation.Col - col);
 
-            if (nextPiece == null || piece.Team != nextPiece.Team)
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
+                possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}");
+
+            else if (nextPiece != null && piece.Team != nextPiece.Team)
             {
                 possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}"); // Representação visual UI coord.
-            }
-            else break;
+                break;
+            }            
 
+            else break;
         }
 
         return possibleMoves;
@@ -101,8 +140,18 @@ class Queen : Piece
 
             if ((nextColumn - 'A') >= board.GetLength(0)) break; // Verifica se a proxima coluna à direita está dentro dos limites do tabuleiro
             nextPiece = board[nextRow, nextColumn - 'A']; // Atribui à nextPiece uma "peça" na posiçao seguinte
-            if (nextPiece == null || nextPiece.Team != piece.Team) // Verifica se a proxima peça não é nula ou se é da mesma equipa
+
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
                 possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+            
+            else if (nextPiece != null && nextPiece.Team != piece.Team) // Verifica se a proxima peça não é nula ou se é da mesma equipa
+            {  
+                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                break;
+            }           
 
             else break;
         }
@@ -119,8 +168,17 @@ class Queen : Piece
 
             nextPiece = board[nextRow, nextColumn - 'A'];
 
-            if (nextPiece == null || nextPiece.Team != piece.Team)
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
                 possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+
+            else if (nextPiece != null && nextPiece.Team != piece.Team)
+            {
+                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                break;
+            }                        
 
             else break;
         }
@@ -136,8 +194,18 @@ class Queen : Piece
                 break;
 
             nextPiece = board[nextRow, nextColumn - 'A'];
-            if (nextPiece == null || nextPiece.Team != piece.Team)
+
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
                 possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+
+            else if (nextPiece != null && nextPiece.Team != piece.Team)
+            {
+                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                break;
+            }
 
             else break;
         }
@@ -153,9 +221,19 @@ class Queen : Piece
                 break;
 
             nextPiece = board[nextRow, nextColumn - 'A'];
-            if (nextPiece == null || nextPiece.Team != piece.Team)
+            
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
                 possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
 
+            else if (nextPiece != null && nextPiece.Team != piece.Team)
+            {
+                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                break;
+            }
+            
             else break;
         }
 

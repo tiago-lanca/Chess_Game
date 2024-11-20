@@ -38,9 +38,19 @@ class Bishop : Piece
 
             if ((nextColumn - 'A') >= board.GetLength(0)) break; // Verifica se a proxima coluna à direita está dentro dos limites do tabuleiro
             nextPiece = board[nextRow, nextColumn - 'A']; // Atribui à nextPiece uma "peça" na posiçao seguinte
-            
-            if (nextPiece == null || nextPiece.Team != piece.Team) // Verifica se a proxima peça não é nula ou se é da mesma equipa
+
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
                 possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+
+            // Verifica se a proxima peça não é nula ou se é da mesma equipa
+            else if (nextPiece != null || nextPiece.Team != piece.Team)
+            {
+                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                break;
+            }
 
             else break;
         }
@@ -57,12 +67,19 @@ class Bishop : Piece
 
             nextPiece = board[nextRow, nextColumn - 'A'];
 
-            if (nextPiece == null || nextPiece.Team != piece.Team)
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
                 possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
 
-            else break;
+            else if (nextPiece != null || nextPiece.Team != piece.Team)
+            {
+                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                break;
+            }
 
-            
+            else break;            
         }
 
         nextColumn = char.ToUpper(input_FromPos[0]);
@@ -76,12 +93,20 @@ class Bishop : Piece
                 break;
 
             nextPiece = board[nextRow, nextColumn - 'A'];
-            if (nextPiece == null || nextPiece.Team != piece.Team) 
+
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
                 possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
 
+            else if (nextPiece != null || nextPiece.Team != piece.Team)
+            {
+                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                break;
+            }
+
             else break;
-
-
         }
 
         nextColumn = char.ToUpper(input_FromPos[0]);
@@ -95,12 +120,20 @@ class Bishop : Piece
                 break;
 
             nextPiece = board[nextRow, nextColumn - 'A'];
-            if (nextPiece == null || nextPiece.Team != piece.Team)
-                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}"); 
 
-            else break;
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
+                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
 
-            
+            else if (nextPiece != null || nextPiece.Team != piece.Team)
+            {
+                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                break;
+            }
+
+            else break;            
         }
 
         return possibleMoves;    

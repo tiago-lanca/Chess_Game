@@ -47,9 +47,14 @@ public class Rook : Piece
         for (int row = fromLocation.Row - 1; row >= 0; row--)
         {
             nextPiece = board[row, col];
-            if (nextPiece == null || piece.Team != nextPiece.Team)
+
+            if(nextPiece == null)
+                possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+
+            else if (nextPiece != null && piece.Team != nextPiece.Team)
             {
                 possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+                break;
             }
             else break;
         }
@@ -57,9 +62,14 @@ public class Rook : Piece
         for (int row = fromLocation.Row + 1; row < board.GetLength(0); row++)
         {
             nextPiece = board[row, col];
-            if (nextPiece == null || piece.Team != nextPiece.Team)
+
+            if (nextPiece == null)
+                possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+
+            else if (nextPiece != null && piece.Team != nextPiece.Team)
             {
                 possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+                break;
             }
             else break;
         }        
@@ -79,9 +89,16 @@ public class Rook : Piece
             // Calculo do char da coluna com o percorrer do ciclo for
             int column = input_FromPos[0] + (col - fromLocation.Col);
 
-            if (nextPiece == null || piece.Team != nextPiece.Team)
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if(nextPiece == null)
+                possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}");
+
+            else if (nextPiece != null && piece.Team != nextPiece.Team)
             {
                 possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}"); // Representação visual UI coord.
+                break;
             }
             else break;
         }
@@ -92,9 +109,16 @@ public class Rook : Piece
             // Calculo do char da coluna com o percorrer do ciclo for
             int column = input_FromPos[0] - (fromLocation.Col - col);
 
-            if (nextPiece == null || piece.Team != nextPiece.Team)
+            /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
+               possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
+               as proximas posições. */
+            if (nextPiece == null)
+                possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}");
+
+            else if (nextPiece != null && piece.Team != nextPiece.Team)
             {
                 possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}"); // Representação visual UI coord.
+                break;
             }
             else break;
         }        
