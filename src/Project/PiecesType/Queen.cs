@@ -21,7 +21,11 @@ public class Queen : Piece
         GetHorizontalMoves(piece, fromLocation, possibleMoves, input_FromPos, board);
         GetDiagonalMoves(piece, fromLocation, possibleMoves, input_FromPos, board);
 
-        MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+        if (IsValidMove(possibleMoves, input_ToPos))
+            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+        
+        else
+            Print_PossibleMovements(possibleMoves, input_ToPos);
     }
 
     public static List<string> GetVerticalMoves(Piece piece, Location fromLocation, List<string> possibleMoves, string input_FromPos, Piece[,] board)

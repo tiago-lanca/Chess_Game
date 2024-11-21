@@ -6,8 +6,10 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-public class Rook : Piece
-{
+class Rook : Piece
+{    
+    public bool FirstMove { get; set; } = true;
+
     public Rook() { }
     public Rook(PieceType type, Location location, PieceTeam team, string placeholder)
         : base(type, location, team, placeholder)
@@ -17,27 +19,28 @@ public class Rook : Piece
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         Piece nextPiece;
+        Rook rook = piece as Rook;
         List<string> possibleMoves = new List<string>();
-        int col = fromLocation.Col;
 
-        
-        if (piece.Team == PieceTeam.White)
+        // Calculo de movimentação vertical e horizontal da Torre , equipa WHITE
+        Get_VerticalMovement((Rook)piece, fromLocation, possibleMoves, input_FromPos, board);
+        Get_HorizontalMovement((Rook)piece, fromLocation, possibleMoves, input_FromPos, board);
+
+        // Calculo de movimentação vertical e horizontal da Torre , equipa BLACK
+        Get_VerticalMovement((Rook)piece, fromLocation, possibleMoves, input_FromPos, board);
+        Get_HorizontalMovement((Rook)piece, fromLocation, possibleMoves, input_FromPos, board);
+
+
+        if (IsValidMove(possibleMoves, input_ToPos))
         {
-            // Calculo de movimentação vertical e horizontal da Torre , equipa WHITE
-            VerticalMovement(piece, fromLocation, possibleMoves, input_FromPos, board);
-            HorizontalMovement(piece, fromLocation, possibleMoves, input_FromPos, board);
+            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+            rook.FirstMove = false;
         }
         else
-        {
-            // Calculo de movimentação vertical e horizontal da Torre , equipa BLACK
-            VerticalMovement(piece, fromLocation, possibleMoves, input_FromPos, board);
-            HorizontalMovement(piece, fromLocation, possibleMoves, input_FromPos, board);
-        }
-
-        MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+            Print_PossibleMovements(possibleMoves, input_ToPos);
     }
 
-    public List<string> VerticalMovement(Piece piece, Location fromLocation, List<string> possibleMoves, string input_FromPos, Piece[,] board)
+    public List<string> Get_VerticalMovement(Piece piece, Location fromLocation, List<string> possibleMoves, string input_FromPos, Piece[,] board)
     {
         int col = fromLocation.Col;
         Piece nextPiece;
@@ -77,7 +80,7 @@ public class Rook : Piece
         return possibleMoves;
     }
 
-    public List<string> HorizontalMovement(Piece piece, Location fromLocation, List<string> possibleMoves, string input_FromPos, Piece[,] board)
+    public List<string> Get_HorizontalMovement(Piece piece, Location fromLocation, List<string> possibleMoves, string input_FromPos, Piece[,] board)
     {
         int row = fromLocation.Row; // Representação da linha na board
         Piece nextPiece;

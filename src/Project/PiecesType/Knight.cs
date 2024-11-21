@@ -22,9 +22,12 @@ class Knight : Piece
 
         // Calculo de movimentação do Cavalo
         Get_VerticalMoves(piece, possibleMoves, fromLocation, input_FromPos, board);
-        Get_HorizontalMoves(piece, possibleMoves, fromLocation, input_FromPos, board);        
+        Get_HorizontalMoves(piece, possibleMoves, fromLocation, input_FromPos, board);
 
-        MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+        if (IsValidMove(possibleMoves, input_ToPos))
+            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+        else
+            Print_PossibleMovements(possibleMoves, input_ToPos);
     }
 
     public static List<string> Get_VerticalMoves(Piece piece, List<string> possibleMoves, Location fromLocation, string input_FromPos, Piece[,] board)

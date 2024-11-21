@@ -22,7 +22,11 @@ class Bishop : Piece
 
         Get_DiagonalMoves(piece, possibleMoves, fromLocation, input_FromPos, board);
 
-        MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+        if (IsValidMove(possibleMoves, input_ToPos))
+            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+        else
+            Print_PossibleMovements(possibleMoves, input_ToPos);
+        
     }
 
    public static List<string> Get_DiagonalMoves(Piece piece, List<string> possibleMoves, Location fromLocation, string input_FromPos, Piece[,] board)
@@ -32,8 +36,7 @@ class Bishop : Piece
 
         // Diagonal cima direita
         for (int nextRow = fromLocation.Row - 1; nextRow >= 0; nextRow--)
-        {
-            
+        {            
             nextColumn += 1;            
 
             if ((nextColumn - 'A') >= board.GetLength(0)) break; // Verifica se a proxima coluna à direita está dentro dos limites do tabuleiro

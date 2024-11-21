@@ -63,7 +63,7 @@ class Board
         board[row, 5] = new Bishop(PieceType.Bishop, new Location(row, 5), team, _isWhite ? "WB2" : "BB2");
 
         board[row, 3] = new Queen(PieceType.Queen, new Location(row, 3), team, _isWhite ? "WQ1" : "BQ1");
-        board[row, 4] = new King(PieceType.King, new Location(row, 4), team, _isWhite ? "WK2" : "BK2");
+        board[row, 4] = new King(PieceType.King, new Location(row, 4), team, _isWhite ? "WK1" : "BK1");
 
         for(int col = 0; col < 8; col++){
             board[rowPawn, col] = new Pawn(PieceType.Pawn, new Location(rowPawn,col), team, _isWhite ? $"WP{col + 1}" : $"BP{col + 1}");

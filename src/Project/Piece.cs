@@ -1,26 +1,27 @@
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 
 public class Piece
 {
-    public PieceType? Type  {get; set;}
-
-    public Location? Location { get; set; } 
+    public PieceType? Type { get; set; }
+    public Location? Location { get; set; }
     public PieceTeam? Team { get; set; }
-    public string PlaceHolder {get; set;}
+    public string PlaceHolder { get; set; }
     public bool isAlive { get; set; } = true;
     public bool SpecialOperation_ON { get; set; } = true;
     public int Nr_Movements { get; set; } = 0;
     public Piece() { }
 
     [JsonConstructor]
-    public Piece(PieceType type, Location location, PieceTeam team, string placeholder){
+    public Piece(PieceType type, Location location, PieceTeam team, string placeholder)
+    {
         Type = type;
         Location = location;
         Team = team;
         PlaceHolder = placeholder;
-    } 
-    
+    }
+
     public virtual void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
 
@@ -28,21 +29,26 @@ public class Piece
 
     public void MakePieceMove(Piece piece, List<string> possibleMoves, Location fromLocation, Location toLocation, string input_ToPos, Piece[,] board)
     {
-        if (IsValidMove(possibleMoves, input_ToPos))
-        {
-            // Altera a peça de localização, e coloca null onde estava anteriormente
-            board[toLocation.Row, toLocation.Col] = piece;
-            board[toLocation.Row, toLocation.Col].Location.Col = toLocation.Col;
-            board[toLocation.Row, toLocation.Col].Location.Row = toLocation.Row;
-            board[fromLocation.Row, fromLocation.Col] = null;
+        // Altera a peça de localização, e coloca null onde estava anteriormente
+        board[toLocation.Row, toLocation.Col] = piece;
+        board[toLocation.Row, toLocation.Col].Location.Col = toLocation.Col;
+        board[toLocation.Row, toLocation.Col].Location.Row = toLocation.Row;
+        board[fromLocation.Row, fromLocation.Col] = null;
 
-            Board.PrintBoard(board);
+        Piece piece_ToPosition = board[toLocation.Row, toLocation.Col];
 
-            Console.WriteLine($"{piece.PlaceHolder} movimentada com sucesso.\n");
+        Board.PrintBoard(board);
 
-            //if (Math.Abs(fromLocation.Row - toLocation.Row) == 2) Verificar se andou 2 casas
-        }
-        else
+
+        //if (Math.Abs(fromLocation.Row - toLocation.Row) == 2) Verificar se andou 2 casas
+    }
+
+    public bool IsValidMove(List<string> possibleMoves, string input_ToPos)
+        => possibleMoves.Any(move => move.Equals(input_ToPos, StringComparison.OrdinalIgnoreCase));
+
+    public void Print_PossibleMovements(List<string> possibleMoves, string input_ToPos)
+    {
+        if (!IsValidMove(possibleMoves, input_ToPos))
         {
             Console.WriteLine("Movimento inválido.\n");
             Console.Write("Possiveis Movimentações: ");
@@ -55,9 +61,9 @@ public class Piece
             }
         }
     }
-    public bool IsValidMove(List<string> possibleMoves, string input_ToPos) => possibleMoves.Any(move => move.Equals(input_ToPos, StringComparison.OrdinalIgnoreCase));
-
 }
+
+
 public class Location { 
     public int Row { get; set; }
     public int Col { get; set; }

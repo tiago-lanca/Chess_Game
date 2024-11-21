@@ -10,6 +10,7 @@ using System.Xml;
 public class Pawn : Piece
 {
     public bool FirstMove { get; set; } = true;
+    public bool En_Passant_Enable { get; set; } = false;
     public Pawn() => Type = PieceType.Pawn;
     public Pawn(PieceType type, Location location, PieceTeam team, string placeholder)
         :base(type, location, team, placeholder)
@@ -20,28 +21,17 @@ public class Pawn : Piece
     {
         List<string> possibleMoves = new List<string>();
 
-        //if (pawn.Team == PieceTeam.White) // WHITE TEAM
-        //{
-            // Verifica se há inimigos nas posições da diagonal
-            if (GetPawnDiagonalMoves((Pawn)pawn, possibleMoves, fromLocation, input_FromPos, board).Count == 0)
-                // Verifica posições na vertical
-                GetPawnVerticalMoves((Pawn)pawn, possibleMoves, fromLocation, input_FromPos, board);
-
-        //}
-        /*else // BLACK TEAM
-        {
-            // Verifica se há inimigos nas posições da diagonal
-            if (GetPawnDiagonalMoves((Pawn)pawn, possibleMoves, fromLocation, input_FromPos, board) == null)
-                // Verifica posições na vertical
-                GetPawnVerticalMoves((Pawn)pawn, possibleMoves, fromLocation, input_FromPos, board);
-
-            else
-                GetPawnDiagonalMoves((Pawn)pawn, possibleMoves, fromLocation, input_FromPos, board);
-        }*/
-
         
-        // Faz a movimentação da peça, se possivel
+       // Verifica se há inimigos nas posições da diagonal, se houver adiciona à lista de possivel movimentações
+       if (GetPawnDiagonalMoves((Pawn)pawn, possibleMoves, fromLocation, input_FromPos, board).Count == 0)
+           // Verifica posições na vertical e obtem as possiveis movimentaçoes, SE não existem na diagonal.
+           GetPawnVerticalMoves((Pawn)pawn, possibleMoves, fromLocation, input_FromPos, board);
+
+        EnPassant_Possibility((Pawn)pawn, possibleMoves, input_FromPos, board);
+       
+        // Verifica se a movimentação pretendida é válida        
         MakePawnPieceMove((Pawn)pawn, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+        
 
         // Verifica se o Peão foi promovido, se for altera a peça e atualiza o tabuleiro
         if(PromotePawn((Pawn)pawn, board) != null)
@@ -52,18 +42,29 @@ public class Pawn : Piece
     {
         if (possibleMoves.Any(m => m.Equals(input_ToPos, StringComparison.OrdinalIgnoreCase)))
         {
+            Piece toPositionPiece = board[toLocation.Row, toLocation.Col];
+            
             // Altera a peça de localização, e coloca null onde estava anteriormente
             board[toLocation.Row, toLocation.Col] = pawn;
             board[toLocation.Row, toLocation.Col].Location.Col = toLocation.Col;
             board[toLocation.Row, toLocation.Col].Location.Row = toLocation.Row;
             board[fromLocation.Row, fromLocation.Col] = null;
 
-            Board.PrintBoard(board);
-
-            Console.WriteLine($"{pawn.PlaceHolder} movimentada com sucesso.\n");
             pawn.FirstMove = false;
 
-            //if (Math.Abs(fromLocation.Row - toLocation.Row) == 2) Verificar se andou 2 casas
+            Board.PrintBoard(board);
+
+            if (toPositionPiece != null)
+            {
+                Console.WriteLine($"Peça {toPositionPiece.PlaceHolder} capturada.\n");
+                toPositionPiece.isAlive = false;
+            }
+            else
+                Console.WriteLine($"{pawn.PlaceHolder} movimentada com sucesso.\n");
+
+
+            if (Math.Abs(fromLocation.Row - toLocation.Row) == 2)
+                pawn.En_Passant_Enable = true;
         }
         else
         {
@@ -75,7 +76,6 @@ public class Pawn : Piece
             Console.WriteLine("");
         }
     }
-
 
     public static List<string> GetPawnDiagonalMoves(Pawn piece, List<string> possibleMoves, Location fromLocation, string input_FromPos, Piece[,] board)
     {
@@ -152,7 +152,6 @@ public class Pawn : Piece
                     {
                         column = input_FromPos[0] + 1;
                         possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}");
-
                     }
                 }
 
@@ -263,6 +262,18 @@ public class Pawn : Piece
         return indexQueen + 1;
     }
 
-    
+    public List<string> EnPassant_Possibility(Pawn pawn, List<string> possibleMoves, string input_FromPos, Piece[,] board)
+    {
+        Pawn rightColumn = (Pawn)board[pawn.Location.Row, pawn.Location.Col + 1];
+        Piece leftColumn = board[pawn.Location.Row, pawn.Location.Col - 1];
+
+        if (rightColumn != null && rightColumn.Type == PieceType.Pawn)
+        {
+            if (rightColumn.En_Passant_Enable)
+                possibleMoves.Add($"{char.ToUpper((char)(input_FromPos[0] + 1))}{rightColumn.Location.Row}");
+        }
+
+        return possibleMoves;
+    }
 }
 
