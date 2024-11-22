@@ -21,7 +21,7 @@ class Game()
     public static string[] gameInProgress_Players = new string[2];
     public static string jsonFile;
     public static bool player1Exists, player2Exists, endingGame = false;
-    public static int Nr_Rounds { get; set; } = 0;
+    public static int Nr_Moves { get; set; } = 0;
 
     #endregion
 
@@ -193,10 +193,14 @@ class Game()
                         piece = board[fromLocation.Row, fromLocation.Col];
                         if (piece != null) {
 
+                            
+
                             switch (piece.Type)
-                            {
+                            {            
                                 case PieceType.Pawn:
                                     piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+
+                                    
                                     break;
 
                                 case PieceType.Rook:

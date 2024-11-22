@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Data.Common;
 using System.Linq;
+using System.Numerics;
 using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,69 +13,88 @@ public class Pawn : Piece
 {
     public bool FirstMove { get; set; } = true;
     public bool En_Passant_Enable { get; set; } = false;
+    public int En_Passant_Round { get; set; }
     public Pawn() => Type = PieceType.Pawn;
     public Pawn(PieceType type, Location location, PieceTeam team, string placeholder)
         :base(type, location, team, placeholder)
     {
 
     }
-    public override void MovePiece(Piece pawn, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
+    
+    public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
+        List<string> en_PassantMoves = new List<string>();
+        Pawn pawn = (Pawn)piece;
 
-        
-       // Verifica se há inimigos nas posições da diagonal, se houver adiciona à lista de possivel movimentações
-       if (GetPawnDiagonalMoves((Pawn)pawn, possibleMoves, fromLocation, input_FromPos, board).Count == 0)
-           // Verifica posições na vertical e obtem as possiveis movimentaçoes, SE não existem na diagonal.
-           GetPawnVerticalMoves((Pawn)pawn, possibleMoves, fromLocation, input_FromPos, board);
+        // RECEBER POSSIVEIS MOVIMENTAÇÕES
 
-        EnPassant_Possibility((Pawn)pawn, possibleMoves, input_FromPos, board);
-       
-        // Verifica se a movimentação pretendida é válida        
-        MakePawnPieceMove((Pawn)pawn, possibleMoves, fromLocation, toLocation, input_ToPos, board);
-        
+        // Verifica se há inimigos nas posições da diagonal, se houver adiciona à lista de possivel movimentações
+        if (GetPawnDiagonalMoves(pawn, possibleMoves, fromLocation, input_FromPos, board).Count == 0)
+            // Verifica posições na vertical e obtem as possiveis movimentaçoes, SE não existem na diagonal.
+            GetPawnVerticalMoves(pawn, possibleMoves, fromLocation, input_FromPos, board);
 
-        // Verifica se o Peão foi promovido, se for altera a peça e atualiza o tabuleiro
-        if(PromotePawn((Pawn)pawn, board) != null)
-            Board.PrintBoard(board);
-    }
+        // Verifica movimentações En Passant possiveis
+        EnPassant_PossibleMovement(pawn, possibleMoves, en_PassantMoves, input_FromPos, board);
 
-    public static void MakePawnPieceMove(Pawn pawn, List<string> possibleMoves, Location fromLocation, Location toLocation, string input_ToPos, Piece[,] board)
-    {
-        if (possibleMoves.Any(m => m.Equals(input_ToPos, StringComparison.OrdinalIgnoreCase)))
+
+        // EFETUAR A MOVIMENTAÇÃO
+
+        // Verifica se a movimentação pretendida é válida
+        if (IsValidMove(possibleMoves, input_ToPos))
         {
-            Piece toPositionPiece = board[toLocation.Row, toLocation.Col];
-            
-            // Altera a peça de localização, e coloca null onde estava anteriormente
-            board[toLocation.Row, toLocation.Col] = pawn;
-            board[toLocation.Row, toLocation.Col].Location.Col = toLocation.Col;
-            board[toLocation.Row, toLocation.Col].Location.Row = toLocation.Row;
-            board[fromLocation.Row, fromLocation.Col] = null;
+            // Se o peão andar 2 casas, ativa a movimentação En Passant nele por uma jogada
+            if (Math.Abs(fromLocation.Row - toLocation.Row) == 2)
+            {
+                pawn.En_Passant_Enable = true;
+                pawn.En_Passant_Round = Game.Nr_Moves + 1;
+            }
 
+            // Aqui acrescenta +1 Game.Nr_Moves
+            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
             pawn.FirstMove = false;
 
-            Board.PrintBoard(board);
+        }
+        else Print_PossibleMovements(possibleMoves, input_ToPos);
 
+        // Verifica se o Peão foi promovido, se for altera a peça e atualiza o tabuleiro
+        if (PawnInYLimits(pawn, board))
+            PromotePawn(pawn, board);
+        //Board.PrintBoard(board);       
+
+    }
+
+    public override void _PieceMoved_Info(Piece piece, List<string> possibleMoves, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
+    {
+        List<string> en_PassantMoves = new List<string>();
+        EnPassant_PossibleMovement((Pawn)piece, possibleMoves, en_PassantMoves, input_FromPos, board);
+        
+        if (en_PassantMoves.Any(move => move.Equals(input_ToPos, StringComparison.OrdinalIgnoreCase)))
+        {
+            // Peão que sofre en passant fica nulo
+            //board[toLocation.Row + 1, toLocation.Col].isAlive = false;
+            if (piece.Team == PieceTeam.White)
+            {
+                Console.WriteLine($"Peça {board[toLocation.Row + 1, toLocation.Col].PlaceHolder} capturada.\n");
+                Console.WriteLine("En passant efetuado.\n");
+                board[toLocation.Row + 1, toLocation.Col] = null;
+            }
+            else
+                Console.WriteLine($"Peça {board[toLocation.Row - 1, toLocation.Col].PlaceHolder} capturada.\n");
+                Console.WriteLine("En passant efetuado.\n");
+                board[toLocation.Row - 1, toLocation.Col] = null;
+        }
+
+        
+        else {
+            Piece toPositionPiece = board[toLocation.Row, toLocation.Col];
             if (toPositionPiece != null)
             {
                 Console.WriteLine($"Peça {toPositionPiece.PlaceHolder} capturada.\n");
-                toPositionPiece.isAlive = false;
+                //toPositionPiece.isAlive = false;
             }
             else
-                Console.WriteLine($"{pawn.PlaceHolder} movimentada com sucesso.\n");
-
-
-            if (Math.Abs(fromLocation.Row - toLocation.Row) == 2)
-                pawn.En_Passant_Enable = true;
-        }
-        else
-        {
-            Console.WriteLine("Movimento inválido.\n");
-            Console.Write("Possiveis Movimentações: ");
-            if (possibleMoves.Count == 0) Console.Write("N/A\n");
-            foreach (var move in possibleMoves)
-                Console.Write($"{move} ");
-            Console.WriteLine("");
+                Console.WriteLine($"{piece.PlaceHolder} movida com sucesso.\n");
         }
     }
 
@@ -177,15 +198,14 @@ public class Pawn : Piece
                 }
             }
         }
-
         return possibleMoves;
     }
 
-    public List<string> GetPawnVerticalMoves(Pawn piece, List<string> possibleMoves, Location fromLocation, string input_FromPos, Piece[,] board)
+    public void GetPawnVerticalMoves(Pawn piece, List<string> possibleMoves, Location fromLocation, string input_FromPos, Piece[,] board)
     {
         Piece nextPiece;
         int row = fromLocation.Row + 1;
-        
+
         // WHITE TEAM
         if (piece.Team == PieceTeam.White)
         {
@@ -194,11 +214,11 @@ public class Pawn : Piece
             if (nextPiece == null)
             {
                 possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row - 1}");
-                if (piece.FirstMove && board[fromLocation.Row - 2, fromLocation.Col] == null) 
+                if (piece.FirstMove && board[fromLocation.Row - 2, fromLocation.Col] == null)
                     possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row - 2}");
             }
         }
-        
+
         //BLACK TEAM
         else
         {
@@ -206,21 +226,19 @@ public class Pawn : Piece
             if (nextPiece == null)
             {
                 possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
-                if (piece.FirstMove && board[fromLocation.Row + 2, fromLocation.Col] == null) 
+                if (piece.FirstMove && board[fromLocation.Row + 2, fromLocation.Col] == null)
                     possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 2}");
             }
         }
-
-        return possibleMoves;
     }
 
-    public static Queen PromotePawn(Pawn piece, Piece[,] board)
+    public Queen PromotePawn(Pawn piece, Piece[,] board)
     {
         Queen newQueen;
         int indexQueen = 0;
 
         // WHITE TEAM
-        if (piece.Team == PieceTeam.White && piece.Location.Row == 0)
+        if (piece.Team == PieceTeam.White && PawnInYLimits(piece, board))
         {
             Console.WriteLine($"Peão {piece.PlaceHolder} promovido.\n");
             newQueen = new Queen(PieceType.Queen, new Location(piece.Location.Row, piece.Location.Col), PieceTeam.White, $"WQ{Get_NewQueenIndex(piece, board)}");
@@ -230,7 +248,7 @@ public class Pawn : Piece
         }
 
         // BLACK TEAM
-        else if(piece.Team == PieceTeam.Black && piece.Location.Row == board.GetLength(0) - 1)
+        else if(piece.Team == PieceTeam.Black && PawnInYLimits(piece, board))
         {
             Console.WriteLine($"Peão {piece.PlaceHolder} promovido.\n");
             newQueen = new Queen(PieceType.Queen, new Location(piece.Location.Row, piece.Location.Col), PieceTeam.Black, $"BQ{Get_NewQueenIndex(piece,board)}");
@@ -243,7 +261,7 @@ public class Pawn : Piece
        
     }
 
-    public static int Get_NewQueenIndex(Piece piece, Piece[,] board)
+    public int Get_NewQueenIndex(Piece piece, Piece[,] board)
     {
         int indexQueen = 0;
 
@@ -262,18 +280,103 @@ public class Pawn : Piece
         return indexQueen + 1;
     }
 
-    public List<string> EnPassant_Possibility(Pawn pawn, List<string> possibleMoves, string input_FromPos, Piece[,] board)
+    public bool PawnInYLimits(Pawn pawn, Piece[,] board)
     {
-        Pawn rightColumn = (Pawn)board[pawn.Location.Row, pawn.Location.Col + 1];
-        Piece leftColumn = board[pawn.Location.Row, pawn.Location.Col - 1];
+        return pawn.Location.Row == board.GetLength(0) - 1 || pawn.Location.Row == 0;
+    }
+    public List<string> EnPassant_PossibleMovement(Pawn pawn, List<string> possibleMoves, List<string> en_PassantMoves, string input_FromPos, Piece[,] board)
+    {
 
-        if (rightColumn != null && rightColumn.Type == PieceType.Pawn)
+        if (_IsEnPassant_Enabled(board))
         {
-            if (rightColumn.En_Passant_Enable)
-                possibleMoves.Add($"{char.ToUpper((char)(input_FromPos[0] + 1))}{rightColumn.Location.Row}");
+            // Verifica peão da direita
+            // Verifica se a coluna da direita está dentro dos limites
+            if (pawn.Location.Col + 1 < board.GetLength(1))
+            {
+                if (board[pawn.Location.Row, pawn.Location.Col + 1] != null)
+                {
+                    Pawn rightColumnPawn = (Pawn)board[pawn.Location.Row, pawn.Location.Col + 1];
+                    if (rightColumnPawn != null && rightColumnPawn.Type == PieceType.Pawn && rightColumnPawn.Team != pawn.Team)
+                    {
+                        if (rightColumnPawn.En_Passant_Round == Game.Nr_Moves)
+                        {
+                            if (rightColumnPawn.En_Passant_Enable)
+                            {
+                                possibleMoves.Add($"{char.ToUpper((char)(input_FromPos[0] + 1))}{rightColumnPawn.Location.Row}");
+                                en_PassantMoves.Add($"{char.ToUpper((char)(input_FromPos[0] + 1))}{rightColumnPawn.Location.Row}");
+                            }
+                        }
+                        else
+                        {
+                            rightColumnPawn.En_Passant_Enable = false;
+                            rightColumnPawn.En_Passant_Round = 0;
+                        }
+                    }
+                }
+            }
+
+            // Verifica peão da esquerda
+            // Verifica se a coluna da esquerda está dentro dos limites
+            if (pawn.Location.Col - 1 >= 0)
+            {
+                if (board[pawn.Location.Row, pawn.Location.Col - 1] != null)
+                {
+                    Pawn leftColumnPawn = (Pawn)board[pawn.Location.Row, pawn.Location.Col - 1];
+
+                    if (leftColumnPawn != null && leftColumnPawn.Type == PieceType.Pawn && leftColumnPawn.Team != pawn.Team)
+                    {
+                        if (leftColumnPawn.En_Passant_Round == Game.Nr_Moves)
+                        {
+                            if (leftColumnPawn.En_Passant_Enable)
+                            {
+                                possibleMoves.Add($"{char.ToUpper((char)(input_FromPos[0] - 1))}{leftColumnPawn.Location.Row + 2}");
+                                en_PassantMoves.Add($"{char.ToUpper((char)(input_FromPos[0] - 1))}{leftColumnPawn.Location.Row + 2}");
+                            }
+                        }
+                        else
+                        {
+                            leftColumnPawn.En_Passant_Enable = false;
+                            leftColumnPawn.En_Passant_Round = 0;
+                        }
+                    }
+                }
+            }
         }
 
-        return possibleMoves;
+        return en_PassantMoves;
+    }
+
+    public static bool _IsEnPassant_Enabled(Piece[,] board)
+    {
+        for (int row = 0; row < board.GetLength(0); row++)
+        {
+            for (int col = 0; col < board.GetLength(1); col++)
+            {
+                if (board[row, col] != null && board[row, col].Type == PieceType.Pawn)
+                {
+                    Pawn pawn = (Pawn)board[row, col];
+                    if (pawn.En_Passant_Enable)
+                        return true;
+                }                
+            }
+        }
+        return false;
+    }
+
+    public static void Set_EnPassant_Disabled(Piece[,] board)
+    {
+        for (int row = 0; row < board.GetLength(0); row++)
+        {
+            for (int col = 0; col < board.GetLength(1); col++)
+            {
+                if (board[row, col] != null && board[row, col].Type == PieceType.Pawn)
+                {
+                    Pawn pawn = (Pawn)board[row, col];
+                    if (pawn.En_Passant_Enable)
+                        pawn.En_Passant_Enable = false;
+                }
+            }
+        }
     }
 }
 

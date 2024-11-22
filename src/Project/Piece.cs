@@ -27,20 +27,21 @@ public class Piece
 
     }
 
-    public void MakePieceMove(Piece piece, List<string> possibleMoves, Location fromLocation, Location toLocation, string input_ToPos, Piece[,] board)
+    public void MakePieceMove(Piece piece, List<string> possibleMoves, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
+        // Informação se peça foi capturada ou movida
+        _PieceMoved_Info(piece, possibleMoves, toLocation, input_FromPos, input_ToPos, board);
+        piece.Nr_Movements++;
+
         // Altera a peça de localização, e coloca null onde estava anteriormente
         board[toLocation.Row, toLocation.Col] = piece;
         board[toLocation.Row, toLocation.Col].Location.Col = toLocation.Col;
         board[toLocation.Row, toLocation.Col].Location.Row = toLocation.Row;
-        board[fromLocation.Row, fromLocation.Col] = null;
+        board[fromLocation.Row, fromLocation.Col] = null;        
 
-        Piece piece_ToPosition = board[toLocation.Row, toLocation.Col];
-
-        Board.PrintBoard(board);
-
-
+        Game.Nr_Moves++;
         //if (Math.Abs(fromLocation.Row - toLocation.Row) == 2) Verificar se andou 2 casas
+
     }
 
     public bool IsValidMove(List<string> possibleMoves, string input_ToPos)
@@ -61,8 +62,21 @@ public class Piece
             }
         }
     }
-}
 
+    public virtual void _PieceMoved_Info(Piece piece, List<string> possibleMoves, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
+    {
+        Piece toPositionPiece = board[toLocation.Row, toLocation.Col];
+
+        if (toPositionPiece != null)
+        {
+            Console.WriteLine($"Peça {toPositionPiece.PlaceHolder} capturada.\n");
+            toPositionPiece.isAlive = false;
+        }
+        else
+            Console.WriteLine($"{piece.PlaceHolder} movimentada com sucesso.\n");
+    }
+
+}
 
 public class Location { 
     public int Row { get; set; }

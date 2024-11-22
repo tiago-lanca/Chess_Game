@@ -25,7 +25,7 @@ class Knight : Piece
         Get_HorizontalMoves(piece, possibleMoves, fromLocation, input_FromPos, board);
 
         if (IsValidMove(possibleMoves, input_ToPos))
-            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
         else
             Print_PossibleMovements(possibleMoves, input_ToPos);
     }

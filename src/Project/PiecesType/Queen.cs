@@ -22,8 +22,8 @@ public class Queen : Piece
         GetDiagonalMoves(piece, fromLocation, possibleMoves, input_FromPos, board);
 
         if (IsValidMove(possibleMoves, input_ToPos))
-            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
-        
+            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+
         else
             Print_PossibleMovements(possibleMoves, input_ToPos);
     }

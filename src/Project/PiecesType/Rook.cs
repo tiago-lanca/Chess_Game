@@ -33,7 +33,7 @@ class Rook : Piece
 
         if (IsValidMove(possibleMoves, input_ToPos))
         {
-            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
             rook.FirstMove = false;
         }
         else

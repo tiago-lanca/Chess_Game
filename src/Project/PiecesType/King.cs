@@ -31,7 +31,7 @@ public class King : Piece
         if (IsValidMove(possibleMoves, input_ToPos))
         {
             if (!Check_RoqueMovement(king, fromLocation, toLocation, board))
-                MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_ToPos, board);
+                MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
         }
         else 
             Print_PossibleMovements(possibleMoves, input_ToPos);
