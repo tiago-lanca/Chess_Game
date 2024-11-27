@@ -16,37 +16,159 @@ public class Queen : Piece
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
+        List<string> possibleMovesKingCheck = new List<string>();
+        King enemyKing = FindEnemyKing(piece, board);
+        King friendKing = FindFriendKing(piece, board);
 
-        GetVerticalMoves(piece, fromLocation, possibleMoves, input_FromPos, board);
-        GetHorizontalMoves(piece, fromLocation, possibleMoves, input_FromPos, board);
-        GetDiagonalMoves(piece, fromLocation, possibleMoves, input_FromPos, board);
-
-        if (IsValidMove(possibleMoves, input_ToPos))
-            MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
-
-        else
+        if (friendKing.isCheck)
+        {
+            friendKing.Get_KingValidPossibleMoves(friendKing, possibleMoves, board);
             Print_PossibleMovements(possibleMoves, input_ToPos);
+        }
+        else
+        {
+            GetAllMoves(piece, possibleMoves, board);
+
+            if (IsValidMove(possibleMoves, input_ToPos))
+            {
+                MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+
+                GetAllMoves(piece, possibleMovesKingCheck, board);
+                if (IsEnemyKing_InCheck(piece, possibleMovesKingCheck, board))
+                {
+                    enemyKing.isCheck = true;
+                    Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                }
+            }
+
+            else
+                Print_PossibleMovements(possibleMoves, input_ToPos);
+        }
     }
 
-    public static List<string> GetVerticalMoves(Piece piece, Location fromLocation, List<string> possibleMoves, string input_FromPos, Piece[,] board)
+    public override List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
-        int col = fromLocation.Col;
+        // Fazer return de 3 métodos para receber todas as movimentações da peça
+        return GetVerticalMoves(piece, possibleMoves, board)
+            .Concat(GetHorizontalMoves(piece, possibleMoves, board))
+            .Concat(GetDiagonalMoves(piece, possibleMoves, board))
+            .ToList();
+    }
+    public override List<string> GetMoves_AsEmptyBoard(Piece piece, List<string> possibleMoves, Piece[,] board)
+    {
+        // VERTICAL MOVES As Empty Board
+        for (int row = piece.Location.Row - 1; row >= 0; row--)
+        {
+            if (IsEnemyKing(piece, row, piece.Location.Col, board))
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+            else if (IsEnemyPiece(piece, row, piece.Location.Col, board))
+            {
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+                break;
+            }
+            else 
+                break;
+        }
+
+        for (int row = piece.Location.Row + 1; row < board.GetLength(0); row++)
+        {
+            if (IsEnemyKing(piece, row, piece.Location.Col, board))
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+            else if (IsEnemyPiece(piece, row, piece.Location.Col, board))
+            {
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+                break;
+            }
+            else
+                break;
+        }
+
+        // HORIZONTAL MOVES As Empty Board
+        for (int col = piece.Location.Col + 1; col < board.GetLength(1); col++)
+        {
+            int column = piece.Location.Col + 'A' + (col - piece.Location.Col);
+            if (IsEnemyKing(piece, piece.Location.Row, col, board))
+                possibleMoves.Add($"{(char)column}{piece.Location.Row + 1}");
+
+            else if (IsEnemyPiece(piece, piece.Location.Row, col, board))
+            {
+                possibleMoves.Add($"{(char)column}{piece.Location.Row + 1}");
+                break;
+            }
+
+            else
+                break;
+        }
+
+        for (int col = piece.Location.Col - 1; col >= 0; col--)
+        {
+            int column = piece.Location.Col + 'A' - (piece.Location.Col - col);
+            if (IsEnemyKing(piece, piece.Location.Row, col, board))
+                possibleMoves.Add($"{(char)column}{piece.Location.Row + 1}");
+
+            else if (IsEnemyPiece(piece, piece.Location.Row, col, board))
+            {
+                possibleMoves.Add($"{(char)column}{piece.Location.Row + 1}");
+                break;
+            }
+
+            else
+                break;
+        }
+
+        // DIAGONAL MOVES As Empty Board
+        int nextColumn = piece.Location.Col + 'A';
+        // Diagonal cima direita
+        for (int nextRow = piece.Location.Row - 1; nextRow >= 0; nextRow--)
+        {
+            nextColumn += 1;
+            possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
+        }
+
+        // Diagonal cima esquerda
+        nextColumn = piece.Location.Col + 'A';
+        for (int nextRow = piece.Location.Row - 1; nextRow >= 0; nextRow--)
+        {
+            nextColumn -= 1;
+            possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
+        }
+
+        // Diagonal baixo direita
+        nextColumn = piece.Location.Col + 'A';
+        for (int nextRow = piece.Location.Row + 1; nextRow < board.GetLength(1); nextRow++)
+        {
+            nextColumn += 1;
+            possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
+        }
+
+        // Diagonal baixo esquerda
+        nextColumn = piece.Location.Col + 'A';
+        for (int nextRow = piece.Location.Row + 1; nextRow < board.GetLength(1); nextRow++)
+        {
+            nextColumn -= 1;
+            possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
+        }
+
+        return possibleMoves;
+    }
+    public List<string> GetVerticalMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
+    {
         Piece nextPiece;
 
         // Calculo de movimentação vertical para cima da Rainha
-        for (int row = fromLocation.Row - 1; row >= 0; row--)
+        for (int row = piece.Location.Row - 1; row >= 0; row--)
         {
-            nextPiece = board[row, col];
+            nextPiece = board[row, piece.Location.Col];
 
             /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
                possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
                as proximas posições. */
             if (nextPiece == null)
-                possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
 
             else if (nextPiece != null && piece.Team != nextPiece.Team)
             {
-                possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
                 break;
             }            
 
@@ -54,9 +176,9 @@ public class Queen : Piece
         }
 
         // Calculo de movimentação vertical para baixo da Rainha
-        for (int row = fromLocation.Row + 1; row < board.GetLength(0); row++)
+        for (int row = piece.Location.Row + 1; row < board.GetLength(0); row++)
         {
-            nextPiece = board[row, col];
+            nextPiece = board[row, piece.Location.Col];
 
             /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
                possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
@@ -64,12 +186,12 @@ public class Queen : Piece
 
             // Verifica se a proxima peça é nulo
             if (nextPiece == null)
-                possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
 
             // Verifica se a proxima peça não é nula e de equipa inimiga, se for dá break para sair do loop for
             else if (nextPiece != null && piece.Team != nextPiece.Team)
             {
-                possibleMoves.Add($"{char.ToUpper(input_FromPos[0])}{row + 1}");
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
                 break;
             }         
             
@@ -79,27 +201,26 @@ public class Queen : Piece
         return possibleMoves;
     }
 
-    public static List<string> GetHorizontalMoves(Piece piece, Location fromLocation, List<string> possibleMoves, string input_FromPos, Piece[,] board)
+    public static List<string> GetHorizontalMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
-        int row = fromLocation.Row; // Representação da linha na board
         Piece nextPiece;
 
         // Calculo para movimentação para a direita
-        for (int col = fromLocation.Col + 1; col < board.GetLength(1); col++)
+        for (int col = piece.Location.Col + 1; col < board.GetLength(1); col++)
         {
-            nextPiece = board[row, col];
+            nextPiece = board[piece.Location.Row, col];
             // Calculo do char da coluna com o percorrer do ciclo for
-            int column = input_FromPos[0] + (col - fromLocation.Col);
+            int column = piece.Location.Col + 'A' + (col - piece.Location.Col);
 
             /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
                possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
                as proximas posições. */
             if (nextPiece == null)
-                possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}");
+                possibleMoves.Add($"{(char)column}{piece.Location.Row + 1}");
 
             else if (nextPiece != null && piece.Team != nextPiece.Team)
             {
-                possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}"); // Representação visual UI coord.
+                possibleMoves.Add($"{(char)column}{piece.Location.Row + 1}"); // Representação visual UI coord.
                 break;
             }            
 
@@ -107,21 +228,21 @@ public class Queen : Piece
         }
 
         // Calculo para movimentação para a esquerda
-        for (int col = fromLocation.Col - 1; col >= 0; col--)
+        for (int col = piece.Location.Col - 1; col >= 0; col--)
         {
-            nextPiece = board[row, col];
+            nextPiece = board[piece.Location.Row, col];
             // Calculo do char da coluna com o percorrer do ciclo for
-            int column = input_FromPos[0] - (fromLocation.Col - col);
+            int column = piece.Location.Col + 'A' - (piece.Location.Col - col);
 
             /* Para evitar que o loop páre quando a proxima peça é inimiga e nao continuar a acrescentar
                possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
                as proximas posições. */
             if (nextPiece == null)
-                possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}");
+                possibleMoves.Add($"{(char)column}{piece.Location.Row + 1}");
 
             else if (nextPiece != null && piece.Team != nextPiece.Team)
             {
-                possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}"); // Representação visual UI coord.
+                possibleMoves.Add($"{(char)column}{piece.Location.Row + 1}"); // Representação visual UI coord.
                 break;
             }            
 
@@ -131,15 +252,14 @@ public class Queen : Piece
         return possibleMoves;
     }
 
-    public static List<string> GetDiagonalMoves(Piece piece, Location fromLocation, List<string> possibleMoves, string input_FromPos, Piece[,] board)
+    public static List<string> GetDiagonalMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         Piece nextPiece;
-        int nextColumn = char.ToUpper(input_FromPos[0]);
+        int nextColumn = piece.Location.Col + 'A';
 
         // Diagonal cima direita
-        for (int nextRow = fromLocation.Row - 1; nextRow >= 0; nextRow--)
+        for (int nextRow = piece.Location.Row - 1; nextRow >= 0; nextRow--)
         {
-
             nextColumn += 1;
 
             if ((nextColumn - 'A') >= board.GetLength(0)) break; // Verifica se a proxima coluna à direita está dentro dos limites do tabuleiro
@@ -149,21 +269,21 @@ public class Queen : Piece
                possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
                as proximas posições. */
             if (nextPiece == null)
-                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
             
             else if (nextPiece != null && nextPiece.Team != piece.Team) // Verifica se a proxima peça não é nula ou se é da mesma equipa
             {  
-                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
                 break;
             }           
 
             else break;
         }
 
-        nextColumn = char.ToUpper(input_FromPos[0]); // Reinicia o valor da proxima coluna para o valor inicial da coordenada[0]
+        nextColumn = piece.Location.Col + 'A'; // Reinicia o valor da proxima coluna para o valor inicial da coordenada[0]
 
         // Diagonal cima esquerda
-        for (int nextRow = fromLocation.Row - 1; nextRow >= 0; nextRow--)
+        for (int nextRow = piece.Location.Row - 1; nextRow >= 0; nextRow--)
         {
             nextColumn -= 1;
 
@@ -176,21 +296,21 @@ public class Queen : Piece
                possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
                as proximas posições. */
             if (nextPiece == null)
-                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
 
             else if (nextPiece != null && nextPiece.Team != piece.Team)
             {
-                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
                 break;
             }                        
 
             else break;
         }
 
-        nextColumn = char.ToUpper(input_FromPos[0]);
+        nextColumn = piece.Location.Col + 'A';
 
         // Diagonal baixo direita
-        for (int nextRow = fromLocation.Row + 1; nextRow < board.GetLength(1); nextRow++)
+        for (int nextRow = piece.Location.Row + 1; nextRow < board.GetLength(1); nextRow++)
         {
 
             nextColumn += 1;
@@ -203,21 +323,21 @@ public class Queen : Piece
                possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
                as proximas posições. */
             if (nextPiece == null)
-                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
 
             else if (nextPiece != null && nextPiece.Team != piece.Team)
             {
-                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
                 break;
             }
 
             else break;
         }
 
-        nextColumn = char.ToUpper(input_FromPos[0]);
+        nextColumn = piece.Location.Col + 'A';
 
         // Diagonal baixo esquerda
-        for (int nextRow = fromLocation.Row + 1; nextRow < board.GetLength(1); nextRow++)
+        for (int nextRow = piece.Location.Row + 1; nextRow < board.GetLength(1); nextRow++)
         {
 
             nextColumn -= 1;
@@ -230,11 +350,11 @@ public class Queen : Piece
                possiveis movimentações. Se for nulo, adiciona às possiveis movimentações e continua no ciclo a verificar
                as proximas posições. */
             if (nextPiece == null)
-                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
 
             else if (nextPiece != null && nextPiece.Team != piece.Team)
             {
-                possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                possibleMoves.Add($"{(char)nextColumn}{nextRow + 1}");
                 break;
             }
             

@@ -27,17 +27,26 @@ public class Piece
 
     }
 
+    public virtual List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
+    {
+        return possibleMoves;
+    }
+
+    public virtual List<string> GetMoves_AsEmptyBoard(Piece piece, List<string> possibleMoves, Piece[,] board)
+    {
+        return possibleMoves;
+    }
     public void MakePieceMove(Piece piece, List<string> possibleMoves, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         // Informação se peça foi capturada ou movida
-        _PieceMoved_Info(piece, possibleMoves, toLocation, input_FromPos, input_ToPos, board);
+        PieceMoved_Info(piece, possibleMoves, toLocation, input_FromPos, input_ToPos, board);
         piece.Nr_Movements++;
 
         // Altera a peça de localização, e coloca null onde estava anteriormente
         board[toLocation.Row, toLocation.Col] = piece;
         board[toLocation.Row, toLocation.Col].Location.Col = toLocation.Col;
         board[toLocation.Row, toLocation.Col].Location.Row = toLocation.Row;
-        board[fromLocation.Row, fromLocation.Col] = null;        
+        board[fromLocation.Row, fromLocation.Col] = null;
 
         Game.Nr_Moves++;
         //if (Math.Abs(fromLocation.Row - toLocation.Row) == 2) Verificar se andou 2 casas
@@ -49,21 +58,18 @@ public class Piece
 
     public void Print_PossibleMovements(List<string> possibleMoves, string input_ToPos)
     {
-        if (!IsValidMove(possibleMoves, input_ToPos))
+        Console.WriteLine("Movimento inválido.\n");
+        Console.Write("Possiveis Movimentações: ");
+        if (possibleMoves.Count == 0) Console.Write("N/A\n");
+        else
         {
-            Console.WriteLine("Movimento inválido.\n");
-            Console.Write("Possiveis Movimentações: ");
-            if (possibleMoves.Count == 0) Console.Write("N/A\n");
-            else
-            {
-                foreach (var move in possibleMoves)
-                    Console.Write($"{move} ");
-                Console.WriteLine("\n");
-            }
+            foreach (var move in possibleMoves)
+                Console.Write($"{move} ");
+            Console.WriteLine("\n");
         }
     }
 
-    public virtual void _PieceMoved_Info(Piece piece, List<string> possibleMoves, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
+    public virtual void PieceMoved_Info(Piece piece, List<string> possibleMoves, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         Piece toPositionPiece = board[toLocation.Row, toLocation.Col];
 
@@ -76,6 +82,54 @@ public class Piece
             Console.WriteLine($"{piece.PlaceHolder} movimentada com sucesso.\n");
     }
 
+    public King FindEnemyKing(Piece piece, Piece[,] board)
+    {
+        for(int row = 0; row < board.GetLength(0); row++)
+        {
+            for(int col = 0; col < board.GetLength(1); col++)
+            {
+                if (board[row, col] is King && board[row, col].Team != piece.Team)
+                {
+                    return (King)board[row, col];
+                }
+            }
+        }
+        return null;
+    }
+
+    public King FindFriendKing(Piece piece, Piece[,] board)
+    {
+        for (int row = 0; row < board.GetLength(0); row++)
+        {
+            for (int col = 0; col < board.GetLength(1); col++)
+            {
+                if (board[row, col] is King && board[row, col].Team == piece.Team)
+                {
+                    return (King)board[row, col];
+                }
+            }
+        }
+        return null;
+    }
+
+    public bool IsEnemyKing_InCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
+    {
+        return possibleMoves.Any(move => move.Equals(Get_KingCoord(FindEnemyKing(piece, board))));
+    }
+    public string Get_KingCoord(King king)
+    {
+        return $"{(char)(king.Location.Col + 'A')}{king.Location.Row + 1}";
+    }
+
+    public bool IsEnemyKing(Piece piece, int row, int col, Piece[,] board)
+    {
+        return board[row, col] != null && board[row, col] is King && board[row, col].Team != piece.Team;
+    }
+
+    public bool IsEnemyPiece(Piece piece, int row, int col, Piece[,] board)
+    {
+        return board[row, col] != null && board[row, col].Team != piece.Team;
+    }
 }
 
 public class Location { 
