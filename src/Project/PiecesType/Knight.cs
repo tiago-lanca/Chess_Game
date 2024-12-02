@@ -55,7 +55,7 @@ class Knight : Piece
             .ToList();
     }
 
-    public override List<string> GetMoves_AsEmptyBoard(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public override List<string> GetMoves_ForKingCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         // HORIZONTAL MOVES
 

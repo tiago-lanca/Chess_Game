@@ -60,7 +60,8 @@ public class Pawn : Piece
 
                 // Aqui acrescenta +1 Game.Nr_Moves
                 MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
-                pawn.FirstMove = false;
+
+                if (pawn.FirstMove) pawn.FirstMove = false;
 
                 GetAllMoves(pawn, possibleMovesKingCheck, board);
                 if (IsEnemyKing_InCheck(piece, possibleMovesKingCheck, board))
@@ -83,7 +84,7 @@ public class Pawn : Piece
             .ToList();
     }
 
-    public override List<string> GetMoves_AsEmptyBoard(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public override List<string> GetMoves_ForKingCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         int column, row = piece.Location.Row + 1;
         Pawn pawn = (Pawn)piece;
@@ -431,12 +432,13 @@ public class Pawn : Piece
                                     }
                                 }
                             }
+                            else
+                            {
+                                rightColumnPawn.En_Passant_Enable = false;
+                                rightColumnPawn.En_Passant_Round = 0;
+                            }
                         }
-                        else
-                        {
-                            rightColumnPawn.En_Passant_Enable = false;
-                            rightColumnPawn.En_Passant_Round = 0;
-                        }
+                        
                     }
                 }
             }

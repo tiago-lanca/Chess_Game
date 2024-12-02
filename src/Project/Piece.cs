@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 
@@ -32,7 +33,7 @@ public class Piece
         return possibleMoves;
     }
 
-    public virtual List<string> GetMoves_AsEmptyBoard(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public virtual List<string> GetMoves_ForKingCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         return possibleMoves;
     }
@@ -49,6 +50,10 @@ public class Piece
         board[fromLocation.Row, fromLocation.Col] = null;
 
         Game.Nr_Moves++;
+
+        //Mudança de turno, do jogador a jogar
+
+        //Game.Turn = !Game.Turn;
         //if (Math.Abs(fromLocation.Row - toLocation.Row) == 2) Verificar se andou 2 casas
 
     }
@@ -111,6 +116,11 @@ public class Piece
         }
         return null;
     }
+
+    public bool IsEnemyKing_Checkmate(King king, List<string> possibleMoves)
+    
+        => king.isCheck && possibleMoves.Count == 0;
+    
 
     public bool IsEnemyKing_InCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
     {

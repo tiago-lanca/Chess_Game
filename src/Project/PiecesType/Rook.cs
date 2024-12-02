@@ -45,7 +45,10 @@ class Rook : Piece
 
                 GetAllMoves(piece, possibleMovesKingCheck, board);
                 if (IsEnemyKing_InCheck(piece, possibleMovesKingCheck, board))
+                {
+                    enemyKing.isCheck = true;
                     Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                }
             }
             else
                 Print_PossibleMovements(possibleMoves, input_ToPos);
@@ -58,7 +61,7 @@ class Rook : Piece
             .ToList();
     }
 
-    public override List<string> GetMoves_AsEmptyBoard(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public override List<string> GetMoves_ForKingCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         for (int row = piece.Location.Row - 1; row >= 0; row--)
         {

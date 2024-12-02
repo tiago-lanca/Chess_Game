@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,6 +23,7 @@ public class Queen : Piece
 
         if (friendKing.isCheck)
         {
+            // criar lista movimentaçoes que seja igual 
             friendKing.Get_KingValidPossibleMoves(friendKing, possibleMoves, board);
             Print_PossibleMovements(possibleMoves, input_ToPos);
         }
@@ -38,7 +40,7 @@ public class Queen : Piece
                 {
                     enemyKing.isCheck = true;
                     Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
-                }
+                                    }
             }
 
             else
@@ -54,7 +56,7 @@ public class Queen : Piece
             .Concat(GetDiagonalMoves(piece, possibleMoves, board))
             .ToList();
     }
-    public override List<string> GetMoves_AsEmptyBoard(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public override List<string> GetMoves_ForKingCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         // VERTICAL MOVES As Empty Board
         for (int row = piece.Location.Row - 1; row >= 0; row--)

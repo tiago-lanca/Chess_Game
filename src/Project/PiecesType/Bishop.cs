@@ -21,6 +21,7 @@ class Bishop : Piece
     {
         List<string> possibleMoves = new List<string>();
         List<string> possibleMoves_EnemyKingCheck = new List<string>();
+        List<string> possibleMoves_EnemyKing = new List<string>();
 
         King enemyKing = FindEnemyKing(piece, board);
         King friendKing = FindFriendKing(piece, board);
@@ -41,10 +42,32 @@ class Bishop : Piece
                 // Verifica se o Rei adversário fica Check
                 Get_DiagonalMoves(piece, possibleMoves_EnemyKingCheck, board);
                 if (IsEnemyKing_InCheck(piece, possibleMoves_EnemyKingCheck, board))
-                {
-                    enemyKing.isCheck = true;
-                    Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                    enemyKing.isCheck = true;                    
+                
+                // Verifica se rei inimigo está checkmate, senao está só check.
+                if (IsEnemyKing_Checkmate(enemyKing, enemyKing.Get_KingValidPossibleMoves(enemyKing, possibleMoves_EnemyKing, board))){
+                    Player player1 = PlayerList.players.Find(player => player.Name == Game.Player1.Name);
+                    Player player2 = PlayerList.players.Find(player => player.Name == Game.Player2.Name);
+
+                    //Game.FinishGame_Checkmate()
+                    if (Game.Turn == false)
+                    {
+                        Console.WriteLine($"Checkmate. {player2.Name} venceu.\n");
+                        player2.NumVictory++;
+                        player1.NumLoss++;
+                    }
+
+                    else
+                    {
+                        Console.WriteLine($"Checkmate. {player1.Name} venceu.\n");
+                        player1.NumVictory++;
+                        player2.NumLoss++;
+                    }
+                    Game._IsGameInProgress = false;
+                    Game._IsNewGame = true;
                 }
+                else Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+
             }
             else
                 Print_PossibleMovements(possibleMoves, input_ToPos);
@@ -56,7 +79,7 @@ class Bishop : Piece
         return Get_DiagonalMoves(piece, possibleMoves, board);
     }
 
-    public override List<string> GetMoves_AsEmptyBoard(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public override List<string> GetMoves_ForKingCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         int nextColumn = piece.Location.Col + 'A';
 

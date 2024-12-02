@@ -42,15 +42,36 @@ public class King : Piece
 
             else
             {
-                MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+                MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);                
                 if (IsEnemyKing_InCheck(piece, possibleMovesKingCheck, board))
                     Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
             }
+
+            king.FirstMove = false;
         }
         else
         {
-            if (possibleMoves.Count == 0)
-                Console.WriteLine("Cheque-mate.\n");
+            // Se nao houver movimentações possiveis do rei
+            //   E se nenhuma outra peça possa ficar à frente do rei
+            if (king.isCheck && possibleMoves.Count == 0)
+            {
+                if (Game.Turn == false)
+                {
+                    Console.WriteLine($"Checkmate. {Game.Player1.Name} venceu.\n");
+                    Game.Player1.NumVictory++;
+                    Game.Player2.NumLoss++;                    
+                }
+
+                else
+                {
+                    Console.WriteLine($"Checkmate. {Game.Player2.Name} venceu.\n");
+                    Game.Player2.NumVictory++;
+                    Game.Player1.NumLoss++;
+                }
+                Game._IsGameInProgress = false;
+                Game._IsNewGame = true;
+
+            }
             else
                 Print_PossibleMovements(possibleMoves, input_ToPos);
         }
@@ -168,30 +189,33 @@ public class King : Piece
         {
             nextPiece = board[row, piece.Location.Col + 1];
             if (nextPiece == null || nextPiece.Team != piece.Team)
-                possibleMoves.Add($"{(char)(columnRight + 'A')}{piece.Location.Row + 1}");            
+                possibleMoves.Add($"{(char)(columnRight + 'A')}{piece.Location.Row + 1}");
         }
-
-        // Verificação de possibilidade de efetuar ROQUE para a direita
-        if (piece.Team == PieceTeam.White)
-            rightRook = (Rook)board[board.GetLength(0) - 1, board.GetLength(1) - 1];
         else
-            rightRook = (Rook)board[0, board.GetLength(1) - 1];
-
-        if (rightRook != null)
         {
-            if (rightRook.FirstMove && piece.FirstMove)
-            {
-                for (int col = piece.Location.Col + 1; col < board.GetLength(1); col++)
-                {
-                    nextPiece = board[row, col];
-                    if (nextPiece != null)
-                    {
-                        if (nextPiece.Type != PieceType.Rook) break;
 
-                        else
+            // Verificação de possibilidade de efetuar ROQUE para a direita
+            if (piece.Team == PieceTeam.White)
+                rightRook = (Rook)board[board.GetLength(0) - 1, board.GetLength(1) - 1];
+            else
+                rightRook = (Rook)board[0, board.GetLength(1) - 1];
+
+            if (rightRook != null)
+            {
+                if (rightRook.FirstMove && piece.FirstMove)
+                {
+                    for (int col = piece.Location.Col + 1; col < board.GetLength(1); col++)
+                    {
+                        nextPiece = board[row, col];
+                        if (nextPiece != null)
                         {
-                            possibleMoves.Add($"{(char)(columnRight + 'A' + 1)}{piece.Location.Row + 1}");
-                            break;
+                            if (nextPiece.Type != PieceType.Rook) break;
+
+                            else
+                            {
+                                possibleMoves.Add($"{(char)(columnRight + 'A' + 1)}{piece.Location.Row + 1}");
+                                break;
+                            }
                         }
                     }
                 }
@@ -257,8 +281,6 @@ public class King : Piece
         Rook leftRook;
         Rook rightRook;
 
-        king.FirstMove = false;
-
         //WHITE TEAM para definir a torre da direita/esq.
         if (king.Team == PieceTeam.White)
         {
@@ -308,7 +330,7 @@ public class King : Piece
             {
                 if (board[row, col] != null && board[row, col].Team != piece.Team)
                 {
-                    board[row, col].GetMoves_AsEmptyBoard(board[row, col], allEnemy_possibleMoves, board);
+                    board[row, col].GetMoves_ForKingCheck(board[row, col], allEnemy_possibleMoves, board);
                 }
             }
         }        

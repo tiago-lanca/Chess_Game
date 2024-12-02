@@ -24,9 +24,8 @@ class PlayerList
         else ShowAllPlayers();
     }
 
-    public static void RegisterPlayer(string name, string[] words)
+    public static void RegisterPlayer(string name)
     {
-
         if (!players.Exists(player => player.Name == name))
         {
             //Instancia novo jogador e adiciona à lista "players"
@@ -55,17 +54,17 @@ class PlayerList
     }
     public static void ShowAllPlayers()
     {
-        if (_IsPlayerListEmpty()) Console.WriteLine("Sem jogadores registados.\n");
+        /*if (_IsPlayerListEmpty()) Console.WriteLine("Sem jogadores registados.\n");
         else
-        {
+        {*/
             // Filtra a lista "players" em ordem decrescente pelo NºVitorias, 
             // se o valor for igual filtra alfabeticamente
-            players = players.OrderByDescending(player => player.NumVictory).ThenBy(player => player.Name).ToList();
-            foreach (Player player in players)
-            {
-                Console.WriteLine(player);
-            }
+        players = players.OrderByDescending(player => player.NumVictory).ThenBy(player => player.Name).ToList();
+        foreach (Player player in players)
+        {
+            Console.WriteLine(player);
         }
+        //}
         //players.ForEach(n => Console.WriteLine($"{n.name} NumJogos: {n.numJogos} NumVitorias: {n.numVitorias} NumEmpates: {n.numEmpates} NumDerrotas: {n.numDerrotas}\n")); 
     }
 

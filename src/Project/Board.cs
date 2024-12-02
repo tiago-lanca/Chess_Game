@@ -7,15 +7,16 @@ class Board
 
     readonly static char[] letters = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
     readonly static int[] numbers = {1, 2, 3, 4, 5, 6, 7, 8};
-    static public Piece[,] board { get; set; } = new Piece[8,8];
-    public static bool _IsNewGame = true;
+    //public static bool _IsNewGame = true;
     #endregion
 
     #region Functions
-    static public void PrintBoard(Piece[,] board) {
-        if (_IsNewGame){
-            InitializePieces(PieceTeam.White);
-            InitializePieces(PieceTeam.Black);
+    static public void PrintBoard(Piece[,] board)
+    {
+        if (Game._IsNewGame)
+        {
+            InitializePieces(PieceTeam.White, board);
+            InitializePieces(PieceTeam.Black, board);
         }
 
         Console.Write("   ");
@@ -24,7 +25,7 @@ class Board
             Console.Write($" {letter}   ");
         }
         Console.WriteLine("");
-            
+
         for (int line = 0; line < board.GetLength(0); line++)
         {
             Console.Write($"{numbers[line]}  ");
@@ -39,9 +40,10 @@ class Board
             Console.WriteLine("");
         }
         Console.WriteLine("");
+
     }
     
-    static public void InitializePieces(PieceTeam team){
+    static public void InitializePieces(PieceTeam team, Piece[,] board){
         int row, rowPawn;
         bool _isWhite = true;
         if(team == PieceTeam.White){
