@@ -19,39 +19,82 @@ class Rook : Piece
 
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
-        Piece nextPiece;
-        Rook rook = piece as Rook;
+        List<string> possibleMoves = new List<string>();
+        List<string> enemyKing_possibleMoves = new List<string>(); ;
+        List<string> enemy_possibleMoves = new List<string>();
+
         King enemyKing = FindEnemyKing(piece, board);
         King friendKing = FindFriendKing(piece, board);
+        Rook rook = (Rook)piece;
 
-        List<string> possibleMoves = new List<string>();
-        List<string> possibleMovesKingCheck = new List<string>();
+        friendKing.IsKing_InCheck(board);
 
-
-        if (friendKing.isCheck)
+        if (friendKing.IsKing_InCheck(board))
         {
-            friendKing.Get_KingValidPossibleMoves(friendKing, possibleMoves, board);
-            Print_PossibleMovements(possibleMoves, input_ToPos);
-        }
-        else
-        {
-            // Calculo de movimentação vertical e horizontal da Torre
-            GetAllMoves((Rook)piece, possibleMoves, board);
-
+            GetAllMoves(piece, possibleMoves, board);
             if (IsValidMove(possibleMoves, input_ToPos))
-            {
-                MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
-                rook.FirstMove = false;
+            {                
+                // Movimenta a peça de posição para proceder à verificação se o Rei da equipa fica em check
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);
 
-                GetAllMoves(piece, possibleMovesKingCheck, board);
-                if (IsEnemyKing_InCheck(piece, possibleMovesKingCheck, board))
+                // Recebe todas as possiveis movimentações do inimigo e verifica se o rei da equipa fica check
+                
+
+                if (friendKing.IsKing_InCheck(board))
                 {
-                    enemyKing.isCheck = true;
-                    Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    // Peça retoma à posição que estava antes
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                }
+                else
+                {
+                    // Faz o movimento da peça e coloca o rei da equipa Não Check
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+                    if (rook.FirstMove) rook.FirstMove = false;
                 }
             }
             else
-                Print_PossibleMovements(possibleMoves, input_ToPos);
+                Print_PossibleMovements(possibleMoves);
+        }
+
+        else
+        {
+            GetAllMoves(piece, possibleMoves, board);
+
+            if (IsValidMove(possibleMoves, input_ToPos))
+            {
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);
+
+
+                if (friendKing.IsKing_InCheck(board))
+                {
+                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    // Peça retoma à posição que estava antes
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                }
+                else
+                {
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+
+                    if (rook.FirstMove) rook.FirstMove = false;
+
+                    // Verifica se o Rei adversário fica Check
+                    GetAllMoves(piece, possibleMoves, board);
+                    if (enemyKing.IsKing_InCheck(board))
+                    {
+
+                        // Verifica se rei inimigo está checkmate, senao está só check.
+                        if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
+                            FinishGame_Complete();
+                        else
+                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                    }                    
+                }
+            }
+            else
+                Print_PossibleMovements(possibleMoves);
         }
     }
     public override List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
@@ -61,24 +104,46 @@ class Rook : Piece
             .ToList();
     }
 
-    public override List<string> GetMoves_ForKingCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public override List<string> GetMoves_ForCheckKing(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         for (int row = piece.Location.Row - 1; row >= 0; row--)
         {
-            possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+            if (IsEnemyKing(piece, row, piece.Location.Col, board) || board[row, piece.Location.Col] is null)
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+            else if (IsEnemyPiece(piece, row, piece.Location.Col, board))
+            {
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+                break;
+            }
+            else
+                break;
         }
 
         for (int row = piece.Location.Row + 1; row < board.GetLength(0); row++)
         {
-            possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+            if (IsEnemyKing(piece, row, piece.Location.Col, board) || board[row, piece.Location.Col] is null)
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+            else if (IsEnemyPiece(piece, row, piece.Location.Col, board))
+            {
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+                break;
+            }
+            else
+                break;
         }
 
         for (int col = piece.Location.Col + 1; col < board.GetLength(1); col++)
         {
             // Calculo do char da coluna com o percorrer do ciclo for
-            int column = piece.Location.Col + 'A' + (col - piece.Location.Col);
-
-            possibleMoves.Add($"{(char)column}{piece.Location.Row + 1}"); // Representação visual UI coord.
+            if (IsEnemyKing(piece, piece.Location.Row, col, board) || board[piece.Location.Row, col] is null)
+                possibleMoves.Add($"{(char)(col + 'A')}{piece.Location.Row + 1}");
+            else if (IsEnemyPiece(piece, piece.Location.Row, col, board))
+            {
+                possibleMoves.Add($"{(char)(col + 'A')}{piece.Location.Row + 1}");
+                break;
+            }
+            else
+                break;
 
         }
 
@@ -86,8 +151,15 @@ class Rook : Piece
         for (int col = piece.Location.Col - 1; col >= 0; col--)
         {
             // Calculo do char da coluna com o percorrer do ciclo for
-            int column = piece.Location.Col + 'A' - (piece.Location.Col - col);
-            possibleMoves.Add($"{(char)column}{piece.Location.Row + 1}"); // Representação visual UI coord.
+            if (IsEnemyKing(piece, piece.Location.Row, col, board) || board[piece.Location.Row, col] is null)
+                possibleMoves.Add($"{(char)(col + 'A')}{piece.Location.Row + 1}");
+            else if (IsEnemyPiece(piece, piece.Location.Row, col, board))
+            {
+                possibleMoves.Add($"{(char)(col + 'A')}{piece.Location.Row + 1}");
+                break;
+            }
+            else
+                break;
         }
 
         return possibleMoves;

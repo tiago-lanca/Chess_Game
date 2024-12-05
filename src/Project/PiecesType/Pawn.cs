@@ -20,60 +20,166 @@ public class Pawn : Piece
     {
 
     }
-    
+
+    public override void SpecialOperation(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
+    {
+        List<string> possibleMoves = new List<string>();
+
+        King enemyKing = FindEnemyKing(piece, board);
+        King friendKing = FindFriendKing(piece, board);
+        Pawn pawn = (Pawn)piece;
+
+        if (SpecialOperation_Enable)
+        {
+            if (piece.Team == PieceTeam.White)
+            {
+                if (piece.Location.Row + 1 < board.GetLength(0))
+                {
+                    if (board[piece.Location.Row + 1, piece.Location.Col] == null)
+                        possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{piece.Location.Row + 2}");
+                }
+            }
+            else
+            {
+                if (piece.Location.Row - 1 >= 0)
+                {
+                    if (board[piece.Location.Row - 1, piece.Location.Col] == null)
+                        possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{piece.Location.Row}");
+                }
+            }
+
+            if (IsValidMove(possibleMoves, input_ToPos))
+            {
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);
+
+                if (friendKing.IsKing_InCheck(board))
+                {
+                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    // Peça retoma à posição que estava antes
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                }
+                else
+                {
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    MakePieceMove_NoInfo(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+                    
+                    Console.WriteLine($"Peão {pawn.PlaceHolder} recuou com sucesso.\n");
+                    SpecialOperation_Enable = false;
+                    if (pawn.FirstMove) pawn.FirstMove = false;
+
+                    // Verifica se o Rei adversário fica Check
+                    GetAllMoves(piece, possibleMoves, board);
+                    if (enemyKing.IsKing_InCheck(board))
+                    {
+
+                        // Verifica se rei inimigo está checkmate, senao está só check.
+                        if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
+                            FinishGame_Complete();
+                        else
+                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                    }
+                }
+            }
+            else
+                Print_PossibleMovements(possibleMoves);
+        }
+        else
+            Console.WriteLine("Movimento inválido.\n");
+    }
+   
+
+
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
         List<string> en_PassantMoves = new List<string>();
-        List<string> possibleMovesKingCheck = new List<string>();
+        List<string> enemyKing_possibleMoves = new List<string>();
+        List<string> enemy_possibleMoves = new List<string>();
 
         Pawn pawn = (Pawn)piece;
         King enemyKing = FindEnemyKing(piece, board);
         King friendKing = FindFriendKing(piece, board);
 
-        if (friendKing.isCheck)
+        if (friendKing.IsKing_InCheck(board))
         {
-            friendKing.Get_KingValidPossibleMoves(friendKing, possibleMoves, board);
-            Print_PossibleMovements(possibleMoves, input_ToPos);
+            GetAllMoves(piece, possibleMoves, board);
+
+            if (IsValidMove(possibleMoves, input_ToPos))
+            {
+                // Movimenta a peça de posição para proceder à verificação se o Rei da equipa fica em check
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);
+
+                // Recebe todas as possiveis movimentações do inimigo e verifica se o rei da equipa fica check
+
+                if (friendKing.IsKing_InCheck(board))
+                {
+                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    // Peça retoma à posição que estava antes
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                }
+                else
+                {
+                    // Faz o movimento da peça e coloca o rei da equipa Não Check
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+
+                    if (pawn.FirstMove) pawn.FirstMove = false;
+                    friendKing.isCheck = false;
+                }
+            }
+            else
+                Print_PossibleMovements(possibleMoves);
         }
+        // Rei da equipa não está Check
         else
         {
             // RECEBER POSSIVEIS MOVIMENTAÇÕES
-
             GetAllMoves(pawn, possibleMoves, board);
-
-            // Verifica movimentações En Passant possiveis
+            // Verifica movimentações de En Passant possiveis
             EnPassant_PossibleMovement(pawn, possibleMoves, en_PassantMoves, input_FromPos, board);
 
-
             // EFETUAR A MOVIMENTAÇÃO
-
             // Verifica se a movimentação pretendida é válida
             if (IsValidMove(possibleMoves, input_ToPos))
             {
                 // Se o peão andar 2 casas, ativa a movimentação En Passant nele por uma jogada
-                if (Math.Abs(fromLocation.Row - toLocation.Row) == 2)
+                Verify_EnPassant_State(pawn, toLocation);
+
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);                
+
+                if (friendKing.IsKing_InCheck(board))
                 {
-                    pawn.En_Passant_Enable = true;
-                    pawn.En_Passant_Round = Game.Nr_Moves + 1;
+                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    // Peça retoma à posição que estava antes
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
+                else
+                {
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    // Aqui acrescenta +1 Game.Nr_Moves
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
 
-                // Aqui acrescenta +1 Game.Nr_Moves
-                MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+                    // Verifica se o Peão foi promovido, se for altera a peça e atualiza o tabuleiro
+                    if (PawnInYLimits(pawn, board))
+                        PromotePawn(pawn, board);
 
-                if (pawn.FirstMove) pawn.FirstMove = false;
+                    if (pawn.FirstMove) pawn.FirstMove = false;
 
-                GetAllMoves(pawn, possibleMovesKingCheck, board);
-                if (IsEnemyKing_InCheck(piece, possibleMovesKingCheck, board))
-                    Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
-
+                    // Verifica se o Rei adversário fica Check, se sim coloca o rei check = true
+                    GetAllMoves(piece, possibleMoves, board);
+                    if (enemyKing.IsKing_InCheck(board))
+                    {
+                        // Verifica se rei inimigo está checkmate, senao está só check.
+                        if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
+                        {
+                            FinishGame_Complete();                            
+                        }
+                        else
+                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                    }                    
+                }
             }
-            else Print_PossibleMovements(possibleMoves, input_ToPos);
-
-            // Verifica se o Peão foi promovido, se for altera a peça e atualiza o tabuleiro
-            if (PawnInYLimits(pawn, board))
-                PromotePawn(pawn, board);
-            //Board.PrintBoard(board);
+            else Print_PossibleMovements(possibleMoves);            
         }
     }
 
@@ -84,98 +190,11 @@ public class Pawn : Piece
             .ToList();
     }
 
-    public override List<string> GetMoves_ForKingCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public override List<string> GetMoves_ForCheckKing(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
-        int column, row = piece.Location.Row + 1;
-        Pawn pawn = (Pawn)piece;
-
-        // DIAGONAL MOVES
-
-        //White Team
-        if (pawn.Team == PieceTeam.White)
-        {
-            // Verifica se a coluna esq. está dentro dos limites
-            if (pawn.Location.Col - 1 >= 0)
-            {
-                // Verifica se a coluna dir. está dentro dos limites
-                if (pawn.Location.Col + 1 < board.GetLength(1))
-                {
-                    // Coluna à esquerda
-                    column = pawn.Location.Col + 'A' - 1;
-                    possibleMoves.Add($"{(char)column}{row - 1}");
-
-                    // Coluna à direita
-                    column = pawn.Location.Col + 'A' + 1;
-                    possibleMoves.Add($"{(char)column}{row - 1}");
-
-                }
-                else // Coluna à direita está fora dos limites. So calcula a esq.
-                {
-                    column = pawn.Location.Col + 'A' - 1;
-                    possibleMoves.Add($"{(char)column}{row - 1}");
-                }
-            }
-            // Coluna em cima à esquerda está fora do tabuleiro. Só dá para cima e direita
-            else
-            {
-                column = pawn.Location.Col + 'A' + 1;
-                possibleMoves.Add($"{(char)column}{row - 1}");
-            }
-        }
-        //Black Team
-        else
-        {
-            // Verifica se a coluna esq. está dentro dos limites
-            if (pawn.Location.Col - 1 >= 0)
-            {
-
-                // Verifica se a coluna dir. está dentro dos limites
-                if (pawn.Location.Col + 1 < board.GetLength(1))
-                {
-                    // Coluna à esquerda
-                    column = pawn.Location.Col + 'A' - 1;
-                    possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}");
-
-                    // Coluna à direita
-                    column = pawn.Location.Col + 'A' + 1;
-                    possibleMoves.Add($"{(char)column}{row + 1}");
-
-                }
-
-                else // Coluna à direita está fora dos limites. So calcula a esq.
-                {
-                    column = pawn.Location.Col + 'A' - 1;
-                    possibleMoves.Add($"{(char)column}{row + 1}");
-                }
-            }
-
-            // Coluna em baixo à esquerda está fora do tabuleiro. Só dá para baixo e direita
-            else
-            {
-                column = pawn.Location.Col + 'A' + 1;
-                possibleMoves.Add($"{(char)column}{row + 1}");
-            }
-        }
-
-        // VERTICAL MOVES
-
-        // WHITE TEAM
-        if (pawn.Team == PieceTeam.White)
-        {
-            possibleMoves.Add($"{(char)(pawn.Location.Col + 'A')}{row - 1}");
-            if (pawn.FirstMove)
-                possibleMoves.Add($"{(char)(pawn.Location.Col + 'A')}{row - 2}");
-        }
-
-        //BLACK TEAM
-        else
-        {
-            possibleMoves.Add($"{(char)(pawn.Location.Col + 'A')}{row + 1}");
-            if (pawn.FirstMove)
-                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 2}");
-        }
-
-        return possibleMoves;
+        return GetPawn_EmptyDiagonalMoves((Pawn)piece, possibleMoves, board)
+            .Concat(GetPawnVerticalMoves((Pawn)piece, possibleMoves, board))
+            .ToList();
     }
     public override void PieceMoved_Info(Piece piece, List<string> possibleMoves, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
@@ -396,6 +415,14 @@ public class Pawn : Piece
         return indexQueen + 1;
     }
 
+    public void Verify_EnPassant_State(Pawn pawn, Location toLocation)
+    {
+        if (Math.Abs(pawn.Location.Row - toLocation.Row) == 2)
+        {
+            pawn.En_Passant_Enable = true;
+            pawn.En_Passant_Round = Game.Nr_Moves + 1;
+        }
+    }
     public bool PawnInYLimits(Pawn pawn, Piece[,] board)
     {
         return pawn.Location.Row == board.GetLength(0) - 1 || pawn.Location.Row == 0;
@@ -480,6 +507,109 @@ public class Pawn : Piece
         }
 
         return en_PassantMoves;
+    }
+
+    public List<string> GetPawn_EmptyDiagonalMoves(Pawn piece, List<string> possibleMoves, Piece[,] board)
+    {
+        int column, row = piece.Location.Row + 1;
+        Piece nextLeftColumnPiece, nextRightColumnPiece;
+
+        //White Team
+        if (piece.Team == PieceTeam.White)
+        {
+            // Verifica se a coluna esq. está dentro dos limites
+            if (piece.Location.Col - 1 >= 0)
+            {
+                nextLeftColumnPiece = board[piece.Location.Row - 1, piece.Location.Col - 1];
+
+                // Verifica se a coluna dir. está dentro dos limites
+                if (piece.Location.Col + 1 < board.GetLength(1))
+                {
+                    nextRightColumnPiece = board[piece.Location.Row - 1, piece.Location.Col + 1];
+                    // Coluna à esquerda
+                    if (nextLeftColumnPiece == null || nextLeftColumnPiece.Team != piece.Team)
+                    {
+                        column = piece.Location.Col + 'A' - 1;
+                        possibleMoves.Add($"{(char)column}{row - 1}");
+                    }
+
+                    if (nextRightColumnPiece == null || nextRightColumnPiece.Team != piece.Team)
+                    {
+                        // Coluna à direita
+                        column = piece.Location.Col + 'A' + 1;
+                        possibleMoves.Add($"{(char)column}{row - 1}");
+                    }
+                }
+                else // Coluna à direita está fora dos limites. So calcula a esq.
+                {
+                    if (nextLeftColumnPiece == null || nextLeftColumnPiece.Team != piece.Team)
+                    {
+                        column = piece.Location.Col + 'A' - 1;
+                        possibleMoves.Add($"{(char)column}{row - 1}");
+                    }
+                }
+            }
+            // Coluna em cima à esquerda está fora do tabuleiro. Só dá para cima e direita
+            else
+            {
+                nextRightColumnPiece = board[piece.Location.Row - 1, piece.Location.Col + 1];
+                if (nextRightColumnPiece == null || nextRightColumnPiece.Team != piece.Team)
+                {
+                    column = piece.Location.Col + 'A' + 1;
+                    possibleMoves.Add($"{(char)column}{row - 1}");
+                }
+            }
+        }
+        //Black Team
+        else
+        {
+            // Verifica se a coluna esq. está dentro dos limites
+            if (piece.Location.Col - 1 >= 0)
+            {
+                nextLeftColumnPiece = board[piece.Location.Row + 1, piece.Location.Col - 1];
+
+                // Verifica se a coluna dir. está dentro dos limites
+                if (piece.Location.Col + 1 < board.GetLength(1))
+                {
+                    nextRightColumnPiece = board[piece.Location.Row + 1, piece.Location.Col + 1];
+                    // Coluna à esquerda
+                    if (nextLeftColumnPiece == null || nextLeftColumnPiece.Team != piece.Team)
+                    {
+                        column = piece.Location.Col + 'A' - 1;
+                        possibleMoves.Add($"{char.ToUpper((char)column)}{row + 1}");
+                    }
+
+                    // Coluna à direita
+                    if (nextRightColumnPiece == null || nextRightColumnPiece.Team != piece.Team)
+                    {
+                        column = piece.Location.Col + 'A' + 1;
+                        possibleMoves.Add($"{(char)column}{row + 1}");
+                    }
+                }
+
+                else // Coluna à direita está fora dos limites. So calcula a esq.
+                {
+                    if (nextLeftColumnPiece == null || nextLeftColumnPiece.Team != piece.Team)
+                    {
+                        column = piece.Location.Col + 'A' - 1;
+                        possibleMoves.Add($"{(char)column}{row + 1}");
+                    }
+                }
+            }
+
+            // Coluna em baixo à esquerda está fora do tabuleiro. Só dá para baixo e direita
+            else
+            {
+                nextRightColumnPiece = board[piece.Location.Row + 1, piece.Location.Col + 1];
+
+                if (nextRightColumnPiece == null || nextRightColumnPiece.Team != piece.Team)
+                {
+                    column = piece.Location.Col + 'A' + 1;
+                    possibleMoves.Add($"{(char)column}{row + 1}");
+                }
+            }
+        }
+        return possibleMoves;
     }
 
     public static bool _IsEnPassant_Enabled(Piece[,] board)

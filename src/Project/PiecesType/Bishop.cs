@@ -14,125 +14,282 @@ class Bishop : Piece
     {
     }
 
-    // Calcular movimentação nas diagonais, rowup + columnRight em ciclo for, rowup + columnLeft em for,
-    // rowdown+columnRight em for, rowdown + columnLeft em for
+    public override void SpecialOperation(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
+    {
+        if (SpecialOperation_Enable)
+        {
+            List<string> possibleMoves = new List<string>();
+
+            King enemyKing = FindEnemyKing(piece, board);
+            King friendKing = FindFriendKing(piece, board);
+            int nr_Pawns = 0;
+            int row = piece.Location.Row, col = piece.Location.Col;
+
+            // Cima
+            if (row - 1 >= 0)
+            {
+                if (board[row - 1, col] != null && board[row - 1, col] is Pawn && board[row - 1, col].Team != piece.Team)
+                {
+                    board[row - 1, col] = null;
+                    nr_Pawns++;
+                }
+            }
+
+            // Baixo
+            if (row + 1 < board.GetLength(0))
+            {
+                if (board[row + 1, col] != null && board[row + 1, col] is Pawn && board[row + 1, col].Team != piece.Team)
+                {
+                    board[row + 1, col] = null;
+                    nr_Pawns++;
+                }
+            }
+
+            // Direita
+            if (col + 1 < board.GetLength(1))
+            {
+                if (board[row, col + 1] != null && board[row, col + 1] is Pawn && board[row, col + 1].Team != piece.Team)
+                {
+                    board[row, col + 1] = null;
+                    nr_Pawns++;
+                }
+            }
+
+            // Esquerda
+            if (col - 1 >= 0)
+            {
+                if (board[row, col - 1] != null && board[row, col - 1] is Pawn && board[row, col - 1].Team != piece.Team)
+                {
+                    board[row, col - 1] = null;
+                    nr_Pawns++;
+                }
+            }
+
+            // Cima Direita
+            if (row - 1 >= 0 && col + 1 < board.GetLength(1))
+            {
+                if (board[row - 1, col + 1] != null && board[row - 1, col + 1] is Pawn && board[row - 1, col + 1].Team != piece.Team)
+                {
+                    board[row - 1, col + 1] = null;
+                    nr_Pawns++;
+                }
+            }
+
+            // Cima Esquerda
+            if (row - 1 >= 0 && col - 1 >= 0)
+            {
+                if (board[row - 1, col - 1] != null && board[row - 1, col - 1] is Pawn && board[row - 1, col - 1].Team != piece.Team)
+                {
+                    board[row - 1, col - 1] = null;
+                    nr_Pawns++;
+                }
+            }
+
+            // Baixo Esquerda
+            if (row + 1 < board.GetLength(0) && col - 1 >= 0)
+            {
+                if (board[row + 1, col - 1] != null && board[row + 1, col - 1] is Pawn && board[row + 1, col - 1].Team != piece.Team)
+                {
+                    board[row + 1, col - 1] = null;
+                    nr_Pawns++;
+                }
+            }
+
+            // Baixo Esquerda
+            if (row + 1 < board.GetLength(0) && col + 1 < board.GetLength(1))
+            {
+                if (board[row + 1, col + 1] != null && board[row + 1, col + 1] is Pawn && board[row + 1, col + 1].Team != piece.Team)
+                {
+                    board[row + 1, col + 1] = null;
+                    nr_Pawns++;
+                }
+            }
+
+            Console.WriteLine($"Bispo {piece.PlaceHolder} capturou {nr_Pawns} peões.\n");
+            SpecialOperation_Enable = false;
+        }
+        else
+            Console.WriteLine("Movimento inválido.\n");
+    }
 
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
-        List<string> possibleMoves_EnemyKingCheck = new List<string>();
-        List<string> possibleMoves_EnemyKing = new List<string>();
+        //List<string> possibleMoves_EnemyKing = new List<string>();
 
         King enemyKing = FindEnemyKing(piece, board);
         King friendKing = FindFriendKing(piece, board);
 
-        if (friendKing.isCheck)
+        //List<string> enemy_possibleMoves = new List<string>();
+
+        if (friendKing.IsKing_InCheck(board))
         {
-            friendKing.Get_KingValidPossibleMoves(friendKing, possibleMoves, board);
-            Print_PossibleMovements(possibleMoves, input_ToPos);
+            GetAllMoves(piece, possibleMoves, board);
+
+            if (IsValidMove(possibleMoves, input_ToPos))
+            {
+                // Movimenta a peça de posição para proceder à verificação se o Rei da equipa fica em check
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);
+
+                // Recebe todas as possiveis movimentações do inimigo e verifica se o rei da equipa fica check 
+                if (friendKing.IsKing_InCheck(board))
+                {
+                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                }
+                else
+                {
+                    // Faz o movimento da peça e coloca o rei da equipa  Check = false
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+                }
+            }
+            else
+                Print_PossibleMovements(possibleMoves);
         }
-        else {
+
+        else
+        {
 
             GetAllMoves(piece, possibleMoves, board);
 
             if (IsValidMove(possibleMoves, input_ToPos))
             {
-                MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);
+                friendKing.IsKing_InCheck(board);
 
-                // Verifica se o Rei adversário fica Check
-                Get_DiagonalMoves(piece, possibleMoves_EnemyKingCheck, board);
-                if (IsEnemyKing_InCheck(piece, possibleMoves_EnemyKingCheck, board))
-                    enemyKing.isCheck = true;                    
-                
-                // Verifica se rei inimigo está checkmate, senao está só check.
-                if (IsEnemyKing_Checkmate(enemyKing, enemyKing.Get_KingValidPossibleMoves(enemyKing, possibleMoves_EnemyKing, board))){
-                    Player player1 = PlayerList.players.Find(player => player.Name == Game.Player1.Name);
-                    Player player2 = PlayerList.players.Find(player => player.Name == Game.Player2.Name);
-
-                    //Game.FinishGame_Checkmate()
-                    if (Game.Turn == false)
-                    {
-                        Console.WriteLine($"Checkmate. {player2.Name} venceu.\n");
-                        player2.NumVictory++;
-                        player1.NumLoss++;
-                    }
-
-                    else
-                    {
-                        Console.WriteLine($"Checkmate. {player1.Name} venceu.\n");
-                        player1.NumVictory++;
-                        player2.NumLoss++;
-                    }
-                    Game._IsGameInProgress = false;
-                    Game._IsNewGame = true;
+                if (friendKing.isCheck)
+                {
+                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    // Peça retoma à posição que estava antes
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
-                else Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                else
+                {
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
 
+                    // Verifica se o Rei adversário fica Check
+                    GetAllMoves(piece, possibleMoves, board);
+                    if (enemyKing.IsKing_InCheck(board))
+                    {
+                        enemyKing.isCheck = true;
+
+                        // Verifica se rei inimigo está checkmate, senao está só check.
+                        if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
+                            FinishGame_Complete();
+                        else
+                            Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                    }
+                }
             }
             else
-                Print_PossibleMovements(possibleMoves, input_ToPos);
+                Print_PossibleMovements(possibleMoves);
         }
     }
 
     public override List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
+        possibleMoves.Clear();
+
         return Get_DiagonalMoves(piece, possibleMoves, board);
     }
 
-    public override List<string> GetMoves_ForKingCheck(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public override List<string> GetMoves_ForCheckKing(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
-        int nextColumn = piece.Location.Col + 'A';
+        int nextColumn = piece.Location.Col;
 
         // Diagonal cima direita
         for (int nextRow = piece.Location.Row - 1; nextRow >= 0; nextRow--)
         {
             nextColumn += 1;
+            if (nextColumn < board.GetLength(1))
+            {
+                if (IsEnemyKing(piece, nextRow, nextColumn, board) || board[nextRow, nextColumn] is null)
+                    possibleMoves.Add($"{(char)(nextColumn + 'A')}{nextRow + 1}");
 
-            if ((nextColumn - 'A') >= board.GetLength(0)) break; // Verifica se a proxima coluna à direita está dentro dos limites do tabuleiro
-           
-            else possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
-                
+                else if (IsEnemyPiece(piece, nextRow, nextColumn, board))
+                {
+                    possibleMoves.Add($"{(char)(nextColumn + 'A')}{nextRow + 1}");
+                    break;
+                }
+
+                else
+                    break;
+            }
+            else
+                break;
         }
 
-        nextColumn = piece.Location.Col + 'A';  // Reinicia o valor da proxima coluna para o valor inicial da coordenada[0]
+        nextColumn = piece.Location.Col;  // Reinicia o valor da proxima coluna para o valor inicial da coordenada[0]
 
         // Diagonal cima esquerda
         for (int nextRow = piece.Location.Row - 1; nextRow >= 0; nextRow--)
         {
             nextColumn -= 1;
+            if (nextColumn >= 0)
+            {
+                if (IsEnemyKing(piece, nextRow, nextColumn, board) || board[nextRow, nextColumn] is null)
+                    possibleMoves.Add($"{(char)(nextColumn + 'A')}{nextRow + 1}");
 
-            if ((nextColumn - 'A') < 0)
-                break;
-            
-            else possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");
+                else if (IsEnemyPiece(piece, nextRow, nextColumn, board))
+                {
+                    possibleMoves.Add($"{(char)(nextColumn + 'A')}{nextRow + 1}");
+                    break;
+                }
+
+                else
+                    break;
+            }
+            else break;
         }
 
-        nextColumn = piece.Location.Col + 'A';
+        nextColumn = piece.Location.Col;
 
         // Diagonal baixo direita
         for (int nextRow = piece.Location.Row + 1; nextRow < board.GetLength(1); nextRow++)
         {
-
             nextColumn += 1;
-            if ((nextColumn - 'A') >= board.GetLength(0))
-                break;
+            if (nextColumn < board.GetLength(1))
+            {
+                if (IsEnemyKing(piece, nextRow, nextColumn, board) || board[nextRow, nextColumn] is null)
+                    possibleMoves.Add($"{(char)(nextColumn + 'A')}{nextRow + 1}");
 
-            
-            else possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");            
+                else if (IsEnemyPiece(piece, nextRow, nextColumn, board))
+                {
+                    possibleMoves.Add($"{(char)(nextColumn + 'A')}{nextRow + 1}");
+                    break;
+                }
+
+                else
+                    break;
+            }
+            else
+                break;
         }
 
-        nextColumn = piece.Location.Col + 'A';
+        nextColumn = piece.Location.Col;
 
         // Diagonal baixo esquerda
         for (int nextRow = piece.Location.Row + 1; nextRow < board.GetLength(1); nextRow++)
         {
-
             nextColumn -= 1;
-            if ((nextColumn - 'A') < 0)
-                break;
+            if (nextColumn >= 0)
+            {
+                if (IsEnemyKing(piece, nextRow, nextColumn, board) || board[nextRow, nextColumn] is null)
+                    possibleMoves.Add($"{(char)(nextColumn + 'A')}{nextRow + 1}");
 
-            
-            else possibleMoves.Add($"{char.ToUpper((char)nextColumn)}{nextRow + 1}");           
+                else if (IsEnemyPiece(piece, nextRow, nextColumn, board))
+                {
+                    possibleMoves.Add($"{(char)(nextColumn + 'A')}{nextRow + 1}");
+                    break;
+                }
+
+                else
+                    break;
+            }
+            else
+                break;
         }
 
         return possibleMoves;
@@ -250,8 +407,5 @@ class Bishop : Piece
 
         return possibleMoves;    
     }
-
-   
-
 }
 

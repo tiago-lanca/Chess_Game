@@ -13,13 +13,13 @@ class Game()
     static public Player? Player2 { get; set; }
     public static Piece[,]? board { get;set; }
     public static bool _IsNewGame = true;
-    public static bool? Turn = false;
+    public static bool? Turn = true; // trocar para false
     public static bool _IsGameInProgress = false;
     public static string[] gameInProgress_Players = new string[2];
     public static string jsonFile;
     public static bool player1Exists, player2Exists, endingGame = false;
     public static int Nr_Moves { get; set; } = 0;
-
+    public static Piece savePiece {  get; set; }
 
     #endregion
 
@@ -274,6 +274,99 @@ class Game()
         else Console.WriteLine("Não existe jogo em curso.\n");
     }
 
+    public static void Command_SpecialOperation(string playerName, string fromPos, string toPos = null)
+    {
+        if (_IsGameInProgress)
+        {
+            if (playerName == gameInProgress_Players[0] || playerName == gameInProgress_Players[1])
+            {
+
+                //if (gameInProgress_Players[GetTurn(Turn)] == playerName)
+                //{
+                Piece piece;
+                bool toCoordInBounds = true, fromCoordInBounds;
+
+                Location fromLocation = new Location
+                (
+                    GetRowCoord(int.Parse(fromPos.Substring(1))),
+                    GetColCoord(char.ToUpper(fromPos[0]))
+                );
+
+                fromCoordInBounds = IsInBounds(fromLocation.Row, board.GetLength(1)) && IsInBounds(fromLocation.Col, board.GetLength(0));
+
+                Location toLocation = null;
+                if (toPos != null)
+                {
+                    toLocation = new Location
+                    (
+                        GetRowCoord(int.Parse(toPos.Substring(1))),
+                        GetColCoord(char.ToUpper(toPos[0]))
+                    );
+
+                    toCoordInBounds = IsInBounds(toLocation.Row, board.GetLength(1)) && IsInBounds(toLocation.Col, board.GetLength(0));
+
+                }
+
+                
+
+                // Verifica se as 2 coordenadas estão dentro dos limites do tabuleiro
+                if (fromCoordInBounds)
+                {
+                    if (toCoordInBounds)
+                    {
+                        piece = board[fromLocation.Row, fromLocation.Col];
+
+                        if (piece != null)
+                        {
+                            // Verifica se o jogador a jogar está a mover a peça da equipa dele
+                            //if ((GetTurn(Turn) == 0 && piece.PlaceHolder[0] == 'B') || GetTurn(Turn) == 1 && piece.PlaceHolder[0] == 'W')
+                            //{
+                            switch (piece.Type)
+                            {
+                                case PieceType.Pawn:
+                                    piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    break;
+
+                                case PieceType.Rook:
+                                    piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    break;
+
+                                case PieceType.Knight:
+                                    piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    break;
+
+                                case PieceType.Bishop:
+                                    piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    break;
+
+                                case PieceType.Queen:
+                                    piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    break;
+
+                                case PieceType.King:
+                                    piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    break;
+
+                                default:
+                                    Console.WriteLine("Comando inválido.\n");
+                                    break;
+                            }
+                            //}
+                            //else Console.WriteLine("Não é a vez do jogador.\n");
+                        }
+
+                        else Console.WriteLine("Não existe peça na posição inicial.\n");
+                    }
+                    else Console.WriteLine("Posição final inválida.\n");
+                }
+                else Console.WriteLine("Posição inválida.\n");
+                //}
+                //else Console.WriteLine("Não é a vez do jogador.\n");
+            }
+            else Console.WriteLine("Jogador não participa no jogo em curso.\n");
+        }
+        else Console.WriteLine("Não existe jogo em curso.\n");
+    }
     public static void ForfeitGame(string player1, string player2 = null)
     {
         if (player2 == null)
@@ -340,6 +433,29 @@ class Game()
             else { Console.WriteLine("Não existe jogo em curso.\n"); }
         }
     }
+    
+    public static void FinishGame_Checkmate(Player player1, Player player2)
+    {
+        Board.PrintBoard(board);
+
+        if (Turn == false)
+        {
+            Console.WriteLine($"Checkmate. {player2.Name} venceu.\n");
+            player2.NumVictory++;
+            player1.NumLoss++;
+        }
+
+        else
+        {
+            Console.WriteLine($"Checkmate. {player1.Name} venceu.\n");
+            player1.NumVictory++;
+            player2.NumLoss++;
+        }
+
+        _IsGameInProgress = false;
+        _IsNewGame = true;
+    }
+
     public static int GetColCoord(int x)
     {
         return x - 'A';
@@ -349,7 +465,7 @@ class Game()
     
 
     public static int GetTurn(bool turn) { return Convert.ToInt16(turn); }
-    public static bool IsInBounds(int coord, int limit) => (coord + 1 >= 0) && (coord + 1 <= limit);
+    public static bool IsInBounds(int coord, int limit) => (coord >= 0) && (coord + 1 <= limit);
 
     public static void ResetAllData()
     {

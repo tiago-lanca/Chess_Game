@@ -38,13 +38,49 @@ public class King : Piece
         if (IsValidMove(possibleMoves, input_ToPos))
         {
             if (RoqueMovement(king, toLocation))
-                Make_RoqueMovement(king, fromLocation, toLocation, board);
+            {
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);
+                // Recebe todas as possiveis movimentações do inimigo e verifica se o rei da equipa fica check   
+                if (king.IsKing_InCheck(board))
+                {
+                    Console.WriteLine($"Movimento invalido (Rei {king.PlaceHolder} Check).\n");
+                    // Peça retoma à posição que estava antes
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                }
+                else
+                {
+                    // Faz o movimento da peça e coloca o rei da equipa  Check = false
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    Make_RoqueMovement(king, fromLocation, toLocation, board);
+                }
+                
+            }
 
             else
             {
-                MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);                
-                if (IsEnemyKing_InCheck(piece, possibleMovesKingCheck, board))
-                    Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                // Movimenta a peça de posição para proceder à verificação se o Rei da equipa fica em check
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);
+
+                // Recebe todas as possiveis movimentações do inimigo e verifica se o rei da equipa fica check   
+                if (king.IsKing_InCheck(board))
+                {
+                   
+                }
+                else
+                {
+                    // Faz o movimento da peça e coloca o rei da equipa  Check = false
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+                }
+                GetAllMoves(piece, possibleMoves, board);
+                if (enemyKing.IsKing_InCheck(board))
+                {
+                    // Verifica se rei inimigo está checkmate, senao está só check.
+                    if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
+                        FinishGame_Complete();
+                    else
+                        Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                }
             }
 
             king.FirstMove = false;
@@ -73,24 +109,26 @@ public class King : Piece
 
             }
             else
-                Print_PossibleMovements(possibleMoves, input_ToPos);
+                Print_PossibleMovements(possibleMoves);
         }
     }
 
     public override List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
+        possibleMoves.Clear();
+
         return Get_HorizontalMoves((King)piece, possibleMoves, board)
             .Concat(Get_DiagonalMoves((King)piece, possibleMoves, board))
             .Concat(Get_VerticalMoves((King)piece, possibleMoves, board))
             .ToList();
     }
 
-    public List<string> Get_KingValidPossibleMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public List<string> Get_KingValidPossibleMoves(King king, List<string> possibleMoves, Piece[,] board)
     {
         List<string> allEnemy_possibleMoves = new List<string>();
 
-        GetAllEnemy_possibleMoves(piece, allEnemy_possibleMoves, board);
-        GetAllMoves(piece, possibleMoves, board);
+        GetAllEnemy_possibleMoves(allEnemy_possibleMoves, board);
+        GetAllMoves(king, possibleMoves, board);
 
         foreach (string move in allEnemy_possibleMoves)
         {
@@ -316,21 +354,35 @@ public class King : Piece
         Console.WriteLine("Roque efetuado.\n");
     }
 
-    public bool IsKing_Check(King king, List<string> possibleMoves)
+    public bool IsKing_InCheck(Piece[,] board)
     {
-        return possibleMoves.Any(move => move.Equals(Get_KingCoord(king), StringComparison.OrdinalIgnoreCase));          
-       
+        List<string> enemy_possibleMoves = new List<string>();
+        this.GetAllEnemy_possibleMoves(enemy_possibleMoves, board);
+
+        if (enemy_possibleMoves.Any(move => move.Equals(Get_KingCoord(this), StringComparison.OrdinalIgnoreCase)))
+        {
+            this.isCheck = true;
+            return true;
+        }
+        else
+        {
+            this.isCheck = false;
+            return false;
+        }
+        
     }
 
-    public List<string> GetAllEnemy_possibleMoves(Piece piece, List<string> allEnemy_possibleMoves, Piece[,] board)
+    public List<string> GetAllEnemy_possibleMoves(List<string> allEnemy_possibleMoves, Piece[,] board)
     {
+        allEnemy_possibleMoves.Clear();
+
         for(int row = 0; row < board.GetLength(0); row++)
         {
             for(int col = 0; col < board.GetLength(1); col++)
             {
-                if (board[row, col] != null && board[row, col].Team != piece.Team)
+                if (board[row, col] != null && board[row, col].Team != this.Team)
                 {
-                    board[row, col].GetMoves_ForKingCheck(board[row, col], allEnemy_possibleMoves, board);
+                    board[row, col].GetMoves_ForCheckKing(board[row, col], allEnemy_possibleMoves, board);
                 }
             }
         }        

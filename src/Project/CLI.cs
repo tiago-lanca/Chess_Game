@@ -61,10 +61,18 @@ namespace Chess_Game.src.Project
                         else Console.WriteLine("Instrução inválida.\n");
                         break;
 
+                    case "OS": // Mover Peça
+                        if (_HasRequiredInputs(words.Length, 3))
+                            Game.Command_SpecialOperation(words[1], words[2]);
+                        else if (_HasRequiredInputs(words.Length, 4))
+                            Game.Command_SpecialOperation(words[1], words[2], words[3]);
+                        else Console.WriteLine("Instrução inválida.\n");
+                        break;
+
                     case "DJ": // Detalhes de jogo
                         if (_HasRequiredInputs(words.Length, 1))
                         {
-                            if (Game.board != null)
+                            if (Game._IsGameInProgress)
                                 Board.PrintBoard(Game.board);
                             else { Console.WriteLine("Não existe jogo em curso.\n"); }
                         }
