@@ -50,8 +50,6 @@ namespace Chess_Game.src.Project
                     case "IJ": // Iniciar Jogo
                         if (_HasRequiredInputs(words.Length, 4))
                             Game.StartGame(words[1], words[2], words[3]);
-                        else if(_HasRequiredInputs(words.Length, 5))
-                            Game.StartGame(words[1], words[2], words[3], words[4]);
                         else Console.WriteLine("Instrução inválida.\n");
                         break;
 
@@ -96,9 +94,11 @@ namespace Chess_Game.src.Project
                             Game.LoadFile(words[1]);
                         else Console.WriteLine("Instrução inválida.\n");
                         break;
-                    case "clear": // Limpar Consola
+
+                    case "Xclear": // Limpar Consola
                         Console.Clear();
                         break;
+
                     default:
                         Console.WriteLine("Instrução inválida.\n");
                         break;

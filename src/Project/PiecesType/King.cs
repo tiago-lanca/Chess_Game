@@ -113,7 +113,7 @@ public class King : Piece
         }
     }
 
-    public override List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         possibleMoves.Clear();
 

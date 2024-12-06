@@ -18,92 +18,7 @@ class Bishop : Piece
     {
         if (SpecialOperation_Enable)
         {
-            List<string> possibleMoves = new List<string>();
-
-            King enemyKing = FindEnemyKing(piece, board);
-            King friendKing = FindFriendKing(piece, board);
-            int nr_Pawns = 0;
-            int row = piece.Location.Row, col = piece.Location.Col;
-
-            // Cima
-            if (row - 1 >= 0)
-            {
-                if (board[row - 1, col] != null && board[row - 1, col] is Pawn && board[row - 1, col].Team != piece.Team)
-                {
-                    board[row - 1, col] = null;
-                    nr_Pawns++;
-                }
-            }
-
-            // Baixo
-            if (row + 1 < board.GetLength(0))
-            {
-                if (board[row + 1, col] != null && board[row + 1, col] is Pawn && board[row + 1, col].Team != piece.Team)
-                {
-                    board[row + 1, col] = null;
-                    nr_Pawns++;
-                }
-            }
-
-            // Direita
-            if (col + 1 < board.GetLength(1))
-            {
-                if (board[row, col + 1] != null && board[row, col + 1] is Pawn && board[row, col + 1].Team != piece.Team)
-                {
-                    board[row, col + 1] = null;
-                    nr_Pawns++;
-                }
-            }
-
-            // Esquerda
-            if (col - 1 >= 0)
-            {
-                if (board[row, col - 1] != null && board[row, col - 1] is Pawn && board[row, col - 1].Team != piece.Team)
-                {
-                    board[row, col - 1] = null;
-                    nr_Pawns++;
-                }
-            }
-
-            // Cima Direita
-            if (row - 1 >= 0 && col + 1 < board.GetLength(1))
-            {
-                if (board[row - 1, col + 1] != null && board[row - 1, col + 1] is Pawn && board[row - 1, col + 1].Team != piece.Team)
-                {
-                    board[row - 1, col + 1] = null;
-                    nr_Pawns++;
-                }
-            }
-
-            // Cima Esquerda
-            if (row - 1 >= 0 && col - 1 >= 0)
-            {
-                if (board[row - 1, col - 1] != null && board[row - 1, col - 1] is Pawn && board[row - 1, col - 1].Team != piece.Team)
-                {
-                    board[row - 1, col - 1] = null;
-                    nr_Pawns++;
-                }
-            }
-
-            // Baixo Esquerda
-            if (row + 1 < board.GetLength(0) && col - 1 >= 0)
-            {
-                if (board[row + 1, col - 1] != null && board[row + 1, col - 1] is Pawn && board[row + 1, col - 1].Team != piece.Team)
-                {
-                    board[row + 1, col - 1] = null;
-                    nr_Pawns++;
-                }
-            }
-
-            // Baixo Esquerda
-            if (row + 1 < board.GetLength(0) && col + 1 < board.GetLength(1))
-            {
-                if (board[row + 1, col + 1] != null && board[row + 1, col + 1] is Pawn && board[row + 1, col + 1].Team != piece.Team)
-                {
-                    board[row + 1, col + 1] = null;
-                    nr_Pawns++;
-                }
-            }
+            int nr_Pawns = ExecuteBishop_Bomb(board);
 
             Console.WriteLine($"Bispo {piece.PlaceHolder} capturou {nr_Pawns} peões.\n");
             SpecialOperation_Enable = false;
@@ -188,7 +103,7 @@ class Bishop : Piece
         }
     }
 
-    public override List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         possibleMoves.Clear();
 
@@ -406,6 +321,94 @@ class Bishop : Piece
         }
 
         return possibleMoves;    
+    }
+
+    public int ExecuteBishop_Bomb(Piece[,] board)
+    {
+        int row = this.Location.Row, col = this.Location.Col;
+        int nr_Pawns = 0;
+
+        // Cima
+        if (row - 1 >= 0)
+        {
+            if (board[row - 1, col] != null && board[row - 1, col] is Pawn && board[row - 1, col].Team != this.Team)
+            {
+                board[row - 1, col] = null;
+                nr_Pawns++;
+            }
+        }
+
+        // Baixo
+        if (row + 1 < board.GetLength(0))
+        {
+            if (board[row + 1, col] != null && board[row + 1, col] is Pawn && board[row + 1, col].Team != this.Team)
+            {
+                board[row + 1, col] = null;
+                nr_Pawns++;
+            }
+        }
+
+        // Direita
+        if (col + 1 < board.GetLength(1))
+        {
+            if (board[row, col + 1] != null && board[row, col + 1] is Pawn && board[row, col + 1].Team != this.Team)
+            {
+                board[row, col + 1] = null;
+                nr_Pawns++;
+            }
+        }
+
+        // Esquerda
+        if (col - 1 >= 0)
+        {
+            if (board[row, col - 1] != null && board[row, col - 1] is Pawn && board[row, col - 1].Team != this.Team)
+            {
+                board[row, col - 1] = null;
+                nr_Pawns++;
+            }
+        }
+
+        // Cima Direita
+        if (row - 1 >= 0 && col + 1 < board.GetLength(1))
+        {
+            if (board[row - 1, col + 1] != null && board[row - 1, col + 1] is Pawn && board[row - 1, col + 1].Team != this.Team)
+            {
+                board[row - 1, col + 1] = null;
+                nr_Pawns++;
+            }
+        }
+
+        // Cima Esquerda
+        if (row - 1 >= 0 && col - 1 >= 0)
+        {
+            if (board[row - 1, col - 1] != null && board[row - 1, col - 1] is Pawn && board[row - 1, col - 1].Team != this.Team)
+            {
+                board[row - 1, col - 1] = null;
+                nr_Pawns++;
+            }
+        }
+
+        // Baixo Esquerda
+        if (row + 1 < board.GetLength(0) && col - 1 >= 0)
+        {
+            if (board[row + 1, col - 1] != null && board[row + 1, col - 1] is Pawn && board[row + 1, col - 1].Team != this.Team)
+            {
+                board[row + 1, col - 1] = null;
+                nr_Pawns++;
+            }
+        }
+
+        // Baixo Esquerda
+        if (row + 1 < board.GetLength(0) && col + 1 < board.GetLength(1))
+        {
+            if (board[row + 1, col + 1] != null && board[row + 1, col + 1] is Pawn && board[row + 1, col + 1].Team != this.Team)
+            {
+                board[row + 1, col + 1] = null;
+                nr_Pawns++;
+            }
+        }
+
+        return nr_Pawns;
     }
 }
 

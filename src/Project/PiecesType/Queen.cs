@@ -14,11 +14,47 @@ public class Queen : Piece
     {
     }
 
+    public override void SpecialOperation(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
+    {
+        List<string> possibleMoves = new List<string>();
+
+        King enemyKing = FindEnemyKing(piece, board);
+        King friendKing = FindFriendKing(piece, board);       
+        
+        if (!friendKing.IsKing_InCheck(board))
+        {
+            // Troca as posições do Rei e Rainha entre eles
+            SwitchPositions_QueenKing(piece, friendKing, board);
+
+            if (friendKing.IsKing_InCheck(board))
+            {
+                Console.WriteLine("Movimento invalido (Rei Check).\n");
+                // Rei e Rainha retomam às posições anteriores
+                UndoPositions_QueenKing(piece, friendKing, board);
+            }
+            else
+            {
+                Console.WriteLine("Rainha trocou de posição com o rei.\n");
+
+                GetAllMoves(piece, possibleMoves, board);
+
+                if (enemyKing.IsKing_InCheck(board))
+                {
+                    // Verifica se rei inimigo está checkmate, senao está só check.
+                    if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
+                        FinishGame_Complete();
+                    else
+                        Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                }
+            }
+        }
+        else
+            Console.WriteLine("Movimento inválido.\n");
+    }
+
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
-        //List<string> enemyKing_possibleMoves = new List<string>();
-        //List<string> enemy_possibleMoves = new List<string>();
 
         King enemyKing = FindEnemyKing(piece, board);
         King friendKing = FindFriendKing(piece, board);
@@ -90,7 +126,7 @@ public class Queen : Piece
         }
     }
 
-    public override List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         possibleMoves.Clear();
         // Fazer return de 3 métodos para receber todas as movimentações da peça
@@ -466,6 +502,34 @@ public class Queen : Piece
         }
 
         return possibleMoves;
+    }
+
+    public void SwitchPositions_QueenKing(Piece queen, King friendKing, Piece[,] board)
+    {
+        int friendKing_Row = friendKing.Location.Row, friendKing_Col = friendKing.Location.Col;
+
+        // Altera as peças no tabuleiro
+        board[friendKing.Location.Row, friendKing.Location.Col] = queen;
+        board[queen.Location.Row, queen.Location.Col] = friendKing;
+
+        // Altera as Locations(Row, Col) de cada peça
+        friendKing.Location.Row = queen.Location.Row;
+        friendKing.Location.Col = queen.Location.Col;
+        queen.Location.Row = friendKing_Row;
+        queen.Location.Col = friendKing_Col;
+    }
+
+    public void UndoPositions_QueenKing(Piece queen, King friendKing, Piece[,] board)
+    {
+        int friendKing_Row = friendKing.Location.Row, friendKing_Col = friendKing.Location.Col;
+
+        board[queen.Location.Row, queen.Location.Col] = friendKing;
+        board[friendKing.Location.Row, friendKing.Location.Col] = queen;
+
+        queen.Location.Row = friendKing.Location.Row;
+        queen.Location.Col = friendKing.Location.Col;
+        friendKing.Location.Row = friendKing_Row;
+        friendKing.Location.Col = friendKing_Col;
     }
 }
 

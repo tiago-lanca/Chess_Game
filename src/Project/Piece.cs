@@ -34,10 +34,10 @@ public class Piece
 
     }
 
-    public virtual List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
+    /*public virtual List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         return possibleMoves;
-    }
+    }*/
 
     public virtual List<string> GetMoves_ForCheckKing(Piece piece, List<string> possibleMoves, Piece[,] board)
     {

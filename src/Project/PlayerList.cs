@@ -57,8 +57,9 @@ class PlayerList
         /*if (_IsPlayerListEmpty()) Console.WriteLine("Sem jogadores registados.\n");
         else
         {*/
-            // Filtra a lista "players" em ordem decrescente pelo NºVitorias, 
-            // se o valor for igual filtra alfabeticamente
+        // Filtra a lista "players" em ordem decrescente pelo NºVitorias, 
+        // se o valor for igual filtra alfabeticamente
+        
         players = players.OrderByDescending(player => player.NumVictory).ThenBy(player => player.Name).ToList();
         foreach (Player player in players)
         {

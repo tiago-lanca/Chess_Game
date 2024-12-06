@@ -17,6 +17,78 @@ class Knight : Piece
     {
     }
 
+    public override void SpecialOperation(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
+    {
+        List<string> possibleMoves = new List<string>();
+        List<string> possibleMoves_EnemyKingCheck = new List<string>();
+
+        King enemyKing = FindEnemyKing(piece, board);
+        King friendKing = FindFriendKing(piece, board);
+
+
+        if (isKnight_Isolate(piece, board))
+        {
+            GetSpecial_Movements(piece, possibleMoves, board);
+
+            if (IsValidMove(possibleMoves, input_ToPos))
+            {
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);
+                friendKing.IsKing_InCheck(board);
+
+                if (friendKing.isCheck)
+                {
+                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    // Peça retoma à posição que estava antes
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                }
+                else
+                {
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+
+                    // Verifica se o Rei adversário fica Check
+                    GetAllMoves(piece, possibleMoves_EnemyKingCheck, board);
+                    if (enemyKing.IsKing_InCheck(board))
+                    {
+                        enemyKing.isCheck = true;
+
+
+                        // Verifica se rei inimigo está checkmate, senao está só check.
+                        if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
+                        {
+                            Player player1 = PlayerList.players.Find(player => player.Name == Game.Player1.Name);
+                            Player player2 = PlayerList.players.Find(player => player.Name == Game.Player2.Name);
+
+                            //Game.FinishGame_Checkmate()
+                            if (Game.Turn == false)
+                            {
+                                Console.WriteLine($"Checkmate. {player2.Name} venceu.\n");
+                                player2.NumVictory++;
+                                player1.NumLoss++;
+                            }
+
+                            else
+                            {
+                                Console.WriteLine($"Checkmate. {player1.Name} venceu.\n");
+                                player1.NumVictory++;
+                                player2.NumLoss++;
+                            }
+                            Game._IsGameInProgress = false;
+                            Game._IsNewGame = true;
+                        }
+                        else
+                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                    }
+
+                }
+            }
+            else
+                Print_PossibleMovements(possibleMoves);
+        }
+        else
+            Console.WriteLine("Movimento inválido.\n");
+    }
+
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
@@ -118,7 +190,7 @@ class Knight : Piece
         }
     }
 
-    public override List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         return Get_VerticalMoves(piece, possibleMoves, board)
             .Concat(Get_HorizontalMoves(piece, possibleMoves,board))
@@ -228,6 +300,98 @@ class Knight : Piece
             }
         }
         return possibleMoves;
-    }        
+    }
+
+    public bool isKnight_Isolate(Piece piece, Piece[,] board)
+    {
+        // Cima
+        if (piece.Location.Row - 1 >= 0)
+            if (board[piece.Location.Row - 1, piece.Location.Col] is not null) 
+                return false;
+        
+        // Baixo
+        if(piece.Location.Row + 1 < board.GetLength(0))        
+            if(board[piece.Location.Row + 1, piece.Location.Col] is not null) 
+                return false;
+        
+        // Direita
+        if(piece.Location.Col + 1 < board.GetLength(1))        
+            if(board[piece.Location.Row, piece.Location.Col + 1] is not null) 
+                return false;
+        
+        // Esquerda
+        if(piece.Location.Col - 1 >= 0)
+            if (board[piece.Location.Row, piece.Location.Col - 1] is not null)
+                return false;
+
+        //Cima Direita
+        if (piece.Location.Row - 1 >= 0 && piece.Location.Col + 1 < board.GetLength(1))
+            if (board[piece.Location.Row - 1, piece.Location.Col + 1] is not null)
+                return false;
+
+        //Cima Esquerda
+        if (piece.Location.Row - 1 >= 0 && piece.Location.Col - 1 >= 0)
+            if (board[piece.Location.Row - 1, piece.Location.Col - 1] is not null)
+                return false;
+
+        //Baixo Esquerda
+        if (piece.Location.Row + 1 < board.GetLength(0) && piece.Location.Col - 1 >= 0)
+            if (board[piece.Location.Row + 1, piece.Location.Col - 1] is not null)
+                return false;
+
+        //Baixo Direita
+        if (piece.Location.Row + 1 < board.GetLength(0) && piece.Location.Col + 1 < board.GetLength(0))
+            if (board[piece.Location.Row + 1, piece.Location.Col + 1] is not null)
+                return false;
+
+        return true;
+    }
+
+    public List<string> GetSpecial_Movements(Piece piece, List<string> possibleMoves, Piece[,] board)
+    {
+        possibleMoves.Clear();
+        
+        // Cima
+        if (piece.Location.Row - 4 >= 0)
+            if (board[piece.Location.Row - 4, piece.Location.Col] is null || board[piece.Location.Row - 4, piece.Location.Col].Team != piece.Team)
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{piece.Location.Row - 3}");
+
+        // Baixo
+        if (piece.Location.Row + 4 < board.GetLength(0))
+            if (board[piece.Location.Row + 4, piece.Location.Col] is null || board[piece.Location.Row + 4, piece.Location.Col].Team != piece.Team)
+                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{piece.Location.Row + 5}");
+
+        // Direita
+        if (piece.Location.Col + 4 < board.GetLength(1))
+            if (board[piece.Location.Row, piece.Location.Col + 4] is null || board[piece.Location.Row, piece.Location.Col + 4].Team != piece.Team)
+                possibleMoves.Add($"{(char)(piece.Location.Col + 4 + 'A')}{piece.Location.Row + 1}");
+
+        // Esquerda
+        if (piece.Location.Col - 4 >= 0)
+            if (board[piece.Location.Row, piece.Location.Col - 4] is null || board[piece.Location.Row, piece.Location.Col - 4].Team != piece.Team)
+                possibleMoves.Add($"{(char)(piece.Location.Col - 4 + 'A')}{piece.Location.Row + 1}");
+
+        //Cima Direita
+        if (piece.Location.Row - 4 >= 0 && piece.Location.Col + 4 < board.GetLength(1))
+            if (board[piece.Location.Row - 4, piece.Location.Col + 4] is null || board[piece.Location.Row - 4, piece.Location.Col + 4].Team != piece.Team)
+                possibleMoves.Add($"{(char)(piece.Location.Col + 4 + 'A')}{piece.Location.Row - 3}");
+
+        //Cima Esquerda
+        if (piece.Location.Row - 4 >= 0 && piece.Location.Col - 4 >= 0)
+            if (board[piece.Location.Row - 4, piece.Location.Col - 4] is null || board[piece.Location.Row - 4, piece.Location.Col - 4].Team != piece.Team)
+                possibleMoves.Add($"{(char)(piece.Location.Col - 4 + 'A')}{piece.Location.Row - 3}");
+
+        //Baixo Esquerda
+        if (piece.Location.Row + 4 < board.GetLength(0) && piece.Location.Col - 4 >= 0)
+            if (board[piece.Location.Row + 4, piece.Location.Col - 4] is null || board[piece.Location.Row + 4, piece.Location.Col - 4].Team != piece.Team)
+                possibleMoves.Add($"{(char)(piece.Location.Col - 4 + 'A')}{piece.Location.Row + 5}");
+
+        //Baixo Direita
+        if (piece.Location.Row + 4 < board.GetLength(0) && piece.Location.Col + 4 < board.GetLength(0))
+            if (board[piece.Location.Row + 4, piece.Location.Col + 4] is null || board[piece.Location.Row + 4, piece.Location.Col + 4].Team != piece.Team)
+                possibleMoves.Add($"{(char)(piece.Location.Col + 4 + 'A')}{piece.Location.Row + 5}");
+
+        return possibleMoves;
+    }
 }
 

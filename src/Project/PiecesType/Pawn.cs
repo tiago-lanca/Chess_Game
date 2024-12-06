@@ -87,8 +87,6 @@ public class Pawn : Piece
             Console.WriteLine("Movimento inválido.\n");
     }
    
-
-
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
@@ -183,7 +181,7 @@ public class Pawn : Piece
         }
     }
 
-    public override List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         return GetPawnDiagonalMoves((Pawn)piece, possibleMoves, board)
             .Concat(GetPawnVerticalMoves((Pawn)piece, possibleMoves, board))

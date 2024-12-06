@@ -97,7 +97,7 @@ class Rook : Piece
                 Print_PossibleMovements(possibleMoves);
         }
     }
-    public override List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
+    public List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         return Get_VerticalMovement((Rook)piece,possibleMoves, board)
             .Concat(Get_HorizontalMovement((Rook)piece, possibleMoves, board))

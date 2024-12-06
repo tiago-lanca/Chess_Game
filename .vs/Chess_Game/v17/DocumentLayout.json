@@ -3,24 +3,28 @@
   "WorkspaceRootPath": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|c:\\users\\tiago\\source\\repos\\chess_game\\src\\project\\board.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|solutionrelative:src\\project\\board.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|c:\\users\\tiago\\source\\repos\\chess_game\\src\\project\\piecestype\\knight.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|solutionrelative:src\\project\\piecestype\\knight.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|c:\\users\\tiago\\source\\repos\\chess_game\\src\\project\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|solutionrelative:src\\project\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|c:\\users\\tiago\\source\\repos\\chess_game\\src\\project\\cli.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|solutionrelative:src\\project\\cli.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|c:\\users\\tiago\\source\\repos\\chess_game\\src\\project\\piecestype\\queen.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|solutionrelative:src\\project\\piecestype\\queen.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|c:\\users\\tiago\\source\\repos\\chess_game\\src\\project\\piecestype\\bishop.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|solutionrelative:src\\project\\piecestype\\bishop.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|c:\\users\\tiago\\source\\repos\\chess_game\\src\\project\\piece.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|solutionrelative:src\\project\\piece.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|c:\\users\\tiago\\source\\repos\\chess_game\\src\\project\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|solutionrelative:src\\project\\game.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|c:\\users\\tiago\\source\\repos\\chess_game\\src\\project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E8157841-934E-46BF-B0EE-65C8D0AF41DD}|Chess_Game.csproj|solutionrelative:src\\project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,7 +34,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -46,85 +50,79 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
+              "Title": "Knight.cs",
+              "DocumentMoniker": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\PiecesType\\Knight.cs",
+              "RelativeDocumentMoniker": "src\\Project\\PiecesType\\Knight.cs",
+              "ToolTip": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\PiecesType\\Knight.cs",
+              "RelativeToolTip": "src\\Project\\PiecesType\\Knight.cs",
+              "ViewState": "AgIAAEcAAAAAAAAAAAAtwBwAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-12-06T00:22:11.43Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Bishop.cs",
+              "DocumentMoniker": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\PiecesType\\Bishop.cs",
+              "RelativeDocumentMoniker": "src\\Project\\PiecesType\\Bishop.cs",
+              "ToolTip": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\PiecesType\\Bishop.cs",
+              "RelativeToolTip": "src\\Project\\PiecesType\\Bishop.cs",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAxwBsAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-12-05T23:17:23.002Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\Program.cs",
+              "RelativeDocumentMoniker": "src\\Project\\Program.cs",
+              "ToolTip": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\Program.cs",
+              "RelativeToolTip": "src\\Project\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-12-05T01:18:27.665Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "CLI.cs",
               "DocumentMoniker": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\CLI.cs",
               "RelativeDocumentMoniker": "src\\Project\\CLI.cs",
               "ToolTip": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\CLI.cs",
               "RelativeToolTip": "src\\Project\\CLI.cs",
-              "ViewState": "AgIAACIAAAAAAAAAAAAgwEUAAAAeAAAAAAAAAA==",
+              "ViewState": "AgIAACgAAAAAAAAAAAAtwDMAAABJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-01T00:48:34.83Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Board.cs",
-              "DocumentMoniker": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\Board.cs",
-              "RelativeDocumentMoniker": "src\\Project\\Board.cs",
-              "ToolTip": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\Board.cs",
-              "RelativeToolTip": "src\\Project\\Board.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-02T16:05:37.497Z",
+              "WhenOpened": "2024-12-01T00:48:34.83Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
               "Title": "Game.cs",
               "DocumentMoniker": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\Game.cs",
               "RelativeDocumentMoniker": "src\\Project\\Game.cs",
               "ToolTip": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\Game.cs",
               "RelativeToolTip": "src\\Project\\Game.cs",
-              "ViewState": "AgIAAGcBAAAAAAAAAAApwLQBAAAXAAAAAAAAAA==",
+              "ViewState": "AgIAAC8AAAAAAAAAAAAtwD0AAAAcAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-20T13:23:55.762Z"
+              "WhenOpened": "2024-11-20T13:23:55.762Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "Piece.cs",
               "DocumentMoniker": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\Piece.cs",
               "RelativeDocumentMoniker": "src\\Project\\Piece.cs",
               "ToolTip": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\Piece.cs",
               "RelativeToolTip": "src\\Project\\Piece.cs",
-              "ViewState": "AgIAAIAAAAAAAAAAAADgv7YAAAA9AAAAAAAAAA==",
+              "ViewState": "AgIAACoAAAAAAAAAAAASwI0AAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-11-13T13:54:45.322Z"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "Orientation": 0,
-      "VerticalTabListWidth": 256,
-      "FloatingWindowState": {
-        "Id": "52b93551-9739-465e-84aa-63b66733537b",
-        "Display": 1,
-        "X": 515,
-        "Y": 311,
-        "Width": 1093,
-        "Height": 565,
-        "WindowState": 2
-      },
-      "DocumentGroups": [
-        {
-          "DockedWidth": 200,
-          "SelectedChildIndex": 0,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Queen.cs",
-              "DocumentMoniker": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\PiecesType\\Queen.cs",
-              "RelativeDocumentMoniker": "src\\Project\\PiecesType\\Queen.cs",
-              "ToolTip": "C:\\Users\\tiago\\source\\repos\\Chess_Game\\src\\Project\\PiecesType\\Queen.cs",
-              "RelativeToolTip": "src\\Project\\PiecesType\\Queen.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAE8AAABvAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-12-04T21:26:39.623Z",
+              "WhenOpened": "2024-11-13T13:54:45.322Z",
               "EditorCaption": ""
             }
           ]
