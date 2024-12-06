@@ -30,12 +30,9 @@ class Bishop : Piece
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
-        //List<string> possibleMoves_EnemyKing = new List<string>();
 
         King enemyKing = FindEnemyKing(piece, board);
         King friendKing = FindFriendKing(piece, board);
-
-        //List<string> enemy_possibleMoves = new List<string>();
 
         if (friendKing.IsKing_InCheck(board))
         {

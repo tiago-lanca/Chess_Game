@@ -16,6 +16,58 @@ class Rook : Piece
         : base(type, location, team, placeholder)
     {
     }
+    public override void SpecialOperation(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
+    {
+        List<string> possibleMoves = new List<string>();
+
+        King friendKing = FindFriendKing(piece, board);
+        King enemyKing = FindEnemyKing(piece, board);
+        Rook rook = (Rook)piece;
+
+        if (SpecialOperation_Enable)
+        {
+            GetRook_SpecialMovements(rook, possibleMoves, board);
+
+            if (IsValidMove(possibleMoves, input_ToPos))
+            {
+                Testing_PiecePosition(piece, fromLocation, toLocation, board);
+
+
+                if (friendKing.IsKing_InCheck(board))
+                {
+                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    // Peça retoma à posição que estava antes
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                }
+                else
+                {
+                    Undo_PiecePosition(piece, fromLocation, toLocation, board);
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+                    Remove_NextPiece_SpecialOperation(fromLocation, toLocation, board);
+                    
+                    Console.WriteLine($"Torre {piece.PlaceHolder} capturou duas peças com sucesso.\n");
+                    SpecialOperation_Enable = false;
+                    if (rook.FirstMove) rook.FirstMove = false;
+
+                    // Verifica se o Rei adversário fica Check
+                    GetAllMoves(piece, possibleMoves, board);
+                    if (enemyKing.IsKing_InCheck(board))
+                    {
+
+                        // Verifica se rei inimigo está checkmate, senao está só check.
+                        if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
+                            FinishGame_Complete();
+                        else
+                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                    }
+                }
+            }
+            else
+                Print_PossibleMovements(possibleMoves);
+        }
+        else
+            Console.WriteLine("Movimento inválido.\n");
+    }
 
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
@@ -251,6 +303,101 @@ class Rook : Piece
         }        
 
         return possibleMoves;
+    }
+
+    public List<string> GetRook_SpecialMovements(Piece piece, List<string> possibleMoves, Piece[,] board)
+    {
+        // Cima
+        if (piece.Location.Row - 1 >= 0)
+        {
+            if (board[piece.Location.Row - 1, piece.Location.Col] is not null && board[piece.Location.Row - 1, piece.Location.Col].Team != piece.Team)
+            {
+                for (int row = piece.Location.Row - 2; row >= 0; row--)
+                {
+                    if (board[row, piece.Location.Col] != null && board[row, piece.Location.Col].Team == piece.Team)
+                        break;
+                    else if (board[row, piece.Location.Col] != null && board[row, piece.Location.Col].Team != piece.Team)
+                    {
+                        possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Baixo
+        if (piece.Location.Row + 1 < board.GetLength(0))
+        {
+            if (board[piece.Location.Row + 1, piece.Location.Col] is not null && board[piece.Location.Row + 1, piece.Location.Col].Team != piece.Team)
+            {
+                for (int row = piece.Location.Row + 2; row < board.GetLength(0); row++)
+                {
+                    if (board[row, piece.Location.Col] != null && board[row, piece.Location.Col].Team == piece.Team)
+                        break;
+                    else if (board[row, piece.Location.Col] != null && board[row, piece.Location.Col].Team != piece.Team)
+                    {
+                        possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Direita
+        if (piece.Location.Col + 1 < board.GetLength(1))
+        {
+            if (board[piece.Location.Row, piece.Location.Col + 1] is not null && board[piece.Location.Row, piece.Location.Col + 1].Team != piece.Team)
+            {
+                for (int col = piece.Location.Col + 2; col < board.GetLength(0); col++)
+                {
+                    if (board[piece.Location.Row, col] != null && board[piece.Location.Row, col].Team == piece.Team)
+                        break;
+                    else if (board[piece.Location.Row, col] != null && board[piece.Location.Row, col].Team != piece.Team)
+                    {
+                        possibleMoves.Add($"{(char)(col + 'A')}{piece.Location.Row + 1}");
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Esquerda
+        if (piece.Location.Col - 1 >= 0)
+        {
+            if (board[piece.Location.Row, piece.Location.Col - 1] is not null && board[piece.Location.Row, piece.Location.Col - 1].Team != piece.Team)
+            {
+                for (int col = piece.Location.Col - 2; col >= 0; col--)
+                {
+                    if (board[piece.Location.Row, col] != null && board[piece.Location.Row, col].Team == piece.Team)
+                        break;
+                    else if (board[piece.Location.Row, col] != null && board[piece.Location.Row, col].Team != piece.Team)
+                    {
+                        possibleMoves.Add($"{(char)(col + 'A')}{piece.Location.Row + 1}");
+                        break;
+                    }
+                }
+            }
+        }
+
+        return possibleMoves;
+    }
+
+    public void Remove_NextPiece_SpecialOperation(Location fromLocation, Location toLocation, Piece[,] board)
+    {
+        if (fromLocation.Col == toLocation.Col)
+        {
+            if (fromLocation.Row > toLocation.Row) // Andou para cima
+                board[fromLocation.Row - 1, fromLocation.Col] = null;
+            else // Andou para baixo
+                board[fromLocation.Row + 1, fromLocation.Col] = null;
+        }
+        else
+        {
+            if (fromLocation.Col > toLocation.Col) // Andou para esquerda
+                board[fromLocation.Row, fromLocation.Col - 1] = null;
+            else // Andou para direita
+                board[fromLocation.Row, fromLocation.Col + 1] = null;
+        }
     }
 
 }
