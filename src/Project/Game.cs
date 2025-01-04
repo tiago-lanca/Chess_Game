@@ -1,10 +1,12 @@
 using Chess_Game.src.Project;
 using Chess_Game.src.Project.PiecesType;
+using System.ComponentModel.Design;
 using System.IO.Compression;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using static Game;
 
 class Game()
 {
@@ -13,13 +15,16 @@ class Game()
     static public Player? Player2 { get; set; }
     public static Piece[,]? board { get;set; }
     public static bool _IsNewGame = true;
-    public static bool? Turn = true; // trocar para false
+    public static bool Turn = true; 
     public static bool _IsGameInProgress = false;
     public static string[] gameInProgress_Players = new string[2];
     public static string jsonFile;
     public static bool player1Exists, player2Exists, endingGame = false;
-    public static int Nr_Moves { get; set; } = 0;
-    public static Piece savePiece {  get; set; }
+    public static int Nr_Rounds { get; set; } = 0;
+    public static Piece savePiece { get; set; }
+    public static Piece PieceToPos { get; set; } = null;
+
+    public static List<RoundData> savedRounds = new List<RoundData>();
 
     #endregion
 
@@ -36,20 +41,24 @@ class Game()
 
                 gameInProgress_Players[0] = Player1.Name;
                 gameInProgress_Players[1] = Player2.Name;
-                _IsGameInProgress = true;
+                Turn = true;
 
                 switch (typegame)
                 {
-                    case "novo":
+                    case "Novo":
                         _IsNewGame = true;
-                        Board.PrintBoard(board = new Piece[8, 8]);
+                        Board.SetNewBoard(board = new Piece[8, 8]);
+                        //Board.PrintBoard(board = new Piece[8, 8]);
                         Console.WriteLine("Jogo iniciado com sucesso.\n");
+                        SaveRound(board, savedRounds);
+                        _IsGameInProgress = true;
                         _IsNewGame = false;
                         endingGame = false;
                         break;
 
-                    case "continuacao":
+                    case "Continuação":
                         _IsNewGame = false;
+                        _IsGameInProgress = true;
                         board = new Piece[8, 8];
 
                         for (int row = 0; row < board.GetLength(0); row++)
@@ -62,12 +71,13 @@ class Game()
                             
                         }
 
-                        Console.WriteLine("Jogo iniciado com sucesso.\n");                       
+                        Console.WriteLine("\nJogo iniciado com sucesso.\n");
+                        SaveRound(board, savedRounds);
 
                         break;
 
                     default:
-                        Console.WriteLine("Instrução inválida");
+                        Console.WriteLine("Instrução inválida.\n");
                         break;
                 }
             }
@@ -75,8 +85,6 @@ class Game()
         }
         else { Console.WriteLine("Existe um jogo em curso.\n"); }
 
-        // Criar variavel turno para verificar quem joga a jogada, criar array de jogadores
-        // do jogo em curso e verificar se no MP NomeJogador coincide com o array[turno].nome
     }
 
     static public void SaveFileExiting(){ SaveFile(jsonFile); }
@@ -101,20 +109,23 @@ class Game()
             PlayerList.players, // lista total jogadores
             Player1,            //
             Player2,
-            //Turn,            
-            board = boardList   //  Dados do jogo em curso
+            Turn,
+            Nr_Rounds,
+            board = boardList,   //  Dados do jogo em curso
+            SavedRounds = savedRounds
         };
 
         var options = new JsonSerializerOptions
         {
-            WriteIndented = true,
-            Converters = { new PieceConverter() }
-        }; // Identação no ficheiro json
+            WriteIndented = true, // Identação no ficheiro json
+            Converters = { new PieceConverter() } // Converter a Peça no seu tipo especifico (Rook, Pawn, ...)
+        }; 
         string jsonString = JsonSerializer.Serialize(serializableFile, options);
         File.WriteAllText($"{namefile}.json", jsonString);
         
-        if(!endingGame)
-            Console.WriteLine("Jogo gravado com sucesso.\n");
+        // Controla a gravação de jogo (usado no desistir)
+        //if(!endingGame)
+        Console.WriteLine("Jogo gravado com sucesso.\n");
 
         jsonFile = $"{namefile}";
     }
@@ -141,40 +152,39 @@ class Game()
 
                     if (activeGame.board.Count != 0) // Haver jogo em curso gravado
                     {
-                        Player1 = activeGame.Player1;
-                        Player2 = activeGame.Player2;
-                        gameInProgress_Players[0] = Player1.Name;
-                        gameInProgress_Players[1] = Player2.Name;
-                        //Turn = activeGame.Turn;
-                        board = new Piece[8, 8];
-
-                        for (int row = 0; row < 8; row++)
-                        {
-                            for (int col = 0; col < 8; col++)
-                            {
-                                if (activeGame.board[row][col] != null)
-                                    board[row, col] = activeGame.board[row][col];
-                                else board[row, col] = null;
-                            }
-                        }
-
                         // Depois de LoadFile verifica se existe jogo no tabuleiro pendente
-                        if (board == null) _IsNewGame = true;
-                        
+                        if (activeGame.board == null)
+                            _IsNewGame = true;
                         else
                         {
                             _IsNewGame = false;
                             _IsGameInProgress = true;
-                        }
 
-                        Console.WriteLine("Ficheiro lido com sucesso.\n");
-                        jsonFile = $"{namefile}";
+
+                            Player1 = activeGame.Player1;
+                            Player2 = activeGame.Player2;
+                            gameInProgress_Players[0] = Player1.Name;
+                            gameInProgress_Players[1] = Player2.Name;
+                            Nr_Rounds = activeGame.Nr_Rounds;
+                            savedRounds = activeGame.savedRounds;
+                            Turn = activeGame.Turn;
+                            board = new Piece[8, 8];
+
+                            for (int row = 0; row < 8; row++)
+                            {
+                                for (int col = 0; col < 8; col++)
+                                {
+                                    if (activeGame.board[row][col] != null)
+                                        board[row, col] = activeGame.board[row][col];
+                                    else board[row, col] = null;
+                                }
+                            }
+                        }
                     }
-                    else
-                    {
-                        Console.WriteLine("Jogo lido com sucesso.\n");
-                        jsonFile = $"{namefile}";
-                    }
+
+                    Console.WriteLine("Jogo lido com sucesso.\n");
+                    jsonFile = $"{namefile}";
+
                 }
                 else
                 {
@@ -192,8 +202,8 @@ class Game()
             if (playerName == gameInProgress_Players[0] || playerName == gameInProgress_Players[1])
             {
                 
-                //if (gameInProgress_Players[GetTurn(Turn)] == playerName)
-                //{
+                if (gameInProgress_Players[GetTurn(Turn)] == playerName)
+                {
                     Piece piece;
 
                     Location fromLocation = new Location
@@ -219,47 +229,53 @@ class Game()
                         if (piece != null)
                         {
                             // Verifica se o jogador a jogar está a mover a peça da equipa dele
-                            //if ((GetTurn(Turn) == 0 && piece.PlaceHolder[0] == 'B') || GetTurn(Turn) == 1 && piece.PlaceHolder[0] == 'W')
-                            //{
+                            if ((GetTurn(Turn) == 0 && piece.PlaceHolder[0] == 'B') || GetTurn(Turn) == 1 && piece.PlaceHolder[0] == 'W')
+                            {
                                 switch (piece.Type)
                                 {
                                     case PieceType.Pawn:
                                         piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                        SaveRound(board, savedRounds);
                                         break;
 
                                     case PieceType.Rook:
                                         piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                        SaveRound(board, savedRounds);
                                         break;
 
                                     case PieceType.Knight:
                                         piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                        SaveRound(board, savedRounds);
                                         break;
 
                                     case PieceType.Bishop:
                                         piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                        SaveRound(board, savedRounds);
                                         break;
 
                                     case PieceType.Queen:
                                         piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                        SaveRound(board, savedRounds);
                                         break;
 
                                     case PieceType.King:
                                         piece.MovePiece(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                        SaveRound(board, savedRounds);
                                         break;
 
                                     default:
                                         Console.WriteLine("Comando inválido.\n");
                                         break;
                                 }
-                            //}
-                            //else Console.WriteLine("Não é a vez do jogador.\n");
+                            }
+                            else Console.WriteLine("Não é a vez do jogador.\n");
                         }
 
                         else Console.WriteLine("Não existe peça na posição inicial.\n");
                     }
                     else Console.WriteLine("Posição inválida.\n");                
-                //}
-                //else Console.WriteLine("Não é a vez do jogador.\n");
+                }
+                else Console.WriteLine("Não é a vez do jogador.\n");
             }
             else Console.WriteLine("Jogador não participa no jogo em curso.\n");
         }
@@ -273,8 +289,8 @@ class Game()
             if (playerName == gameInProgress_Players[0] || playerName == gameInProgress_Players[1])
             {
 
-                //if (gameInProgress_Players[GetTurn(Turn)] == playerName)
-                //{
+                if (gameInProgress_Players[GetTurn(Turn)] == playerName)
+                {
                 Piece piece;
                 bool toCoordInBounds = true, fromCoordInBounds;
 
@@ -309,40 +325,46 @@ class Game()
                         if (piece != null)
                         {
                             // Verifica se o jogador a jogar está a mover a peça da equipa dele
-                            //if ((GetTurn(Turn) == 0 && piece.PlaceHolder[0] == 'B') || GetTurn(Turn) == 1 && piece.PlaceHolder[0] == 'W')
-                            //{
+                            if ((GetTurn(Turn) == 0 && piece.PlaceHolder[0] == 'B') || GetTurn(Turn) == 1 && piece.PlaceHolder[0] == 'W')
+                            {
                             switch (piece.Type)
                             {
                                 case PieceType.Pawn:
                                     piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    SaveRound(board, savedRounds);
                                     break;
 
                                 case PieceType.Rook:
                                     piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    SaveRound(board, savedRounds);
                                     break;
 
                                 case PieceType.Knight:
                                     piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    SaveRound(board, savedRounds);
                                     break;
 
                                 case PieceType.Bishop:
                                     piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    SaveRound(board, savedRounds);
                                     break;
 
                                 case PieceType.Queen:
                                     piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    SaveRound(board, savedRounds);
                                     break;
 
                                 case PieceType.King:
                                     piece.SpecialOperation(piece, fromLocation, toLocation, fromPos, toPos, board);
+                                    SaveRound(board, savedRounds);
                                     break;
 
                                 default:
                                     Console.WriteLine("Comando inválido.\n");
                                     break;
                             }
-                            //}
-                            //else Console.WriteLine("Não é a vez do jogador.\n");
+                            }
+                            else Console.WriteLine("Não é a vez do jogador.\n");
                         }
 
                         else Console.WriteLine("Não existe peça na posição inicial.\n");
@@ -350,8 +372,8 @@ class Game()
                     else Console.WriteLine("Posição final inválida.\n");
                 }
                 else Console.WriteLine("Posição inválida.\n");
-                //}
-                //else Console.WriteLine("Não é a vez do jogador.\n");
+                }
+                else Console.WriteLine("Não é a vez do jogador.\n");
             }
             else Console.WriteLine("Jogador não participa no jogo em curso.\n");
         }
@@ -375,15 +397,19 @@ class Game()
                         Player PlayerWon = PlayerList.players.Find(player => player.Name == playerWon.ElementAt(0));
                         PlayerLost.NumLoss++;
                         PlayerWon.NumVictory++;
-                        
-                        Console.WriteLine($"{player1} desistiu.\n");
+
+                        PlayerLost.NumGames++;
+                        PlayerWon.NumGames++;
+
+                        //Console.WriteLine($"{player1} desistiu.\n");
                         Console.WriteLine("Jogo terminado com sucesso.\n");
 
                         ResetAllData(); // Faz reset dos dados para um novo jogo
 
-                        endingGame = true;
+                        // Para gravar o jogo após o jogo terminar por desistência
+                        /*endingGame = true;
                         SaveFile(jsonFile);
-                        endingGame = false;
+                        endingGame = false;*/
 
                     }
                     else { Console.WriteLine("Jogador não participa no jogo em curso.\n"); }
@@ -408,13 +434,19 @@ class Game()
                         Player2 = PlayerList.players.Find(player => player.Name == player2);
                         Player1.NumDraw++;
                         Player2.NumDraw++;
-                        Console.WriteLine($"{player1} e {player2} empataram.\n");
+
+                        Player1.NumGames++;
+                        Player2.NumGames++;
+
+                        //Console.WriteLine($"{player1} e {player2} empataram.\n");
+                        Console.WriteLine("Jogo terminado com sucesso.\n");
 
                         ResetAllData(); // Faz reset dos dados para um novo jogo
 
-                        endingGame = true;
+                        // Para gravar o jogo após o jogo terminar por desistência
+                        /*endingGame = true;
                         SaveFile(jsonFile);
-                        endingGame = false;
+                        endingGame = false;*/
                     }
                     else { Console.WriteLine("Jogador não participa no jogo.\n"); }
                 }
@@ -442,8 +474,97 @@ class Game()
             player2.NumLoss++;
         }
 
+        player1.NumGames++;
+        player2.NumGames++;
+
         _IsGameInProgress = false;
         _IsNewGame = true;
+    }
+
+    public static void SaveRound(Piece[,] board, List<RoundData> savedRounds)
+    {
+        List<List<Piece>> boardList = new List<List<Piece>>();
+
+        for (int row = 0; row < 8; row++)
+        {
+            List<Piece> rowList = new List<Piece>();
+            for (int col = 0; col < 8; col++)
+            {
+                rowList.Add(board[row, col]?.Clone()); // Cria novas peças (evita alterações de Locations)
+            }
+            boardList.Add(rowList);
+        }
+        if (savedRounds.Count == 0 || savedRounds.Last().NrRounds != Nr_Rounds)
+        {
+            savedRounds.Add(new RoundData
+            {
+                NrRounds = Nr_Rounds,
+                BoardList = boardList,
+                Turn = Turn
+            });
+
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true, // Identação no ficheiro json
+                Converters = { new PieceConverter() } // Converter a Peça no seu tipo especifico (Rook, Pawn, ...)
+            };
+            string jsonString = JsonSerializer.Serialize(Game.savedRounds, options);
+            File.WriteAllText($"SavedRounds.json", jsonString);
+        }
+    }
+
+    public static void Undo_Round()
+    {
+        bool initialRound = Nr_Rounds == 0;
+
+        var gameJson = File.ReadAllText($"SavedRounds.json");
+
+        var options = new JsonSerializerOptions
+        {
+            IncludeFields = true,
+            WriteIndented = true, // Identação no ficheiro json
+            PropertyNameCaseInsensitive = true,
+            Converters = { new PieceConverter() }
+        };
+
+        var undoRound = JsonSerializer.Deserialize<List<RoundData>>(gameJson, options);
+
+        if (initialRound)
+            Console.WriteLine("Está na jogada inicial. Não é possivel efetuar Undo.\n");
+
+        else
+        {
+            board = new Piece[8, 8];
+
+            foreach (var round in undoRound)
+            {
+                if (round.NrRounds == Nr_Rounds - 1)
+                {
+                    Nr_Rounds = round.NrRounds;
+                    Turn = round.Turn;
+
+                    for (int row = 0; row < 8; row++)
+                    {
+                        for (int col = 0; col < 8; col++)
+                        {
+                            if (round.BoardList[row][col] != null)
+                                board[row, col] = round.BoardList[row][col];
+                            else board[row, col] = null;
+                        }
+                    }
+
+                    Console.WriteLine("Undo realizado com sucesso.\n");
+                    undoRound.RemoveAt(undoRound.Count - 1); // Remove o ultimo item da lista undoRound
+                    break;
+                }
+            }
+
+            savedRounds.Clear();
+            savedRounds = undoRound; // Limpa a lista e substitui pela nova lista criada pelo Undo para gravar no ficheiro
+            string jsonString = JsonSerializer.Serialize(undoRound, options);
+            File.WriteAllText($"SavedRounds.json", jsonString);
+        }
+        
     }
 
     public static int GetColCoord(int x)
@@ -451,8 +572,7 @@ class Game()
         return x - 'A';
     }
     public static int GetRowCoord(int y) =>  y - 1;
-    // return y - 1;
-    
+    // return y - 1;    
 
     public static int GetTurn(bool turn) { return Convert.ToInt16(turn); }
     public static bool IsInBounds(int coord, int limit) => (coord >= 0) && (coord + 1 <= limit);
@@ -507,8 +627,17 @@ class Game()
         public List<Player>? players { get; set; }
         public Player? Player1 { get; set; }
         public Player? Player2 { get; set; }
-        //public bool? Turn { get; set; }
-        public List<List<Piece>>? board { get; set; }   
+        public bool Turn { get; set; }
+        public List<List<Piece>>? board { get; set; }         
+        public int Nr_Rounds { get; set; }
+        public List<RoundData>? savedRounds {  get; set; }
+    }
+
+    public class RoundData
+    {        
+        public int NrRounds { get; set; }
+        public List<List<Piece>> BoardList { get; set; }        
+        public bool Turn { get; set; }
     }
 }
 

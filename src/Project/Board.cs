@@ -11,13 +11,16 @@ class Board
     #endregion
 
     #region Functions
+
+    static public void SetNewBoard(Piece[,] board)
+    {
+        InitializePieces(PieceTeam.White, board);
+        InitializePieces(PieceTeam.Black, board);
+    }
     static public void PrintBoard(Piece[,] board)
     {
         if (Game._IsNewGame)
-        {
-            InitializePieces(PieceTeam.White, board);
-            InitializePieces(PieceTeam.Black, board);
-        }
+            SetNewBoard(board);
 
         Console.Write("   ");
         foreach (char letter in letters)

@@ -13,7 +13,16 @@ class Bishop : Piece
         : base(pieceType, location, team, placeholder)
     {
     }
-
+    public override Bishop Clone()
+    {
+        return new Bishop
+        {
+            Type = Type,
+            Location = new Location(Location.Row, Location.Col),
+            Team = Team,
+            PlaceHolder = PlaceHolder,
+        };
+    }
     public override void SpecialOperation(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         if (SpecialOperation_Enable)
@@ -22,6 +31,10 @@ class Bishop : Piece
 
             Console.WriteLine($"Bispo {piece.PlaceHolder} capturou {nr_Pawns} peões.\n");
             SpecialOperation_Enable = false;
+            Game.Nr_Rounds++;
+
+            //Mudança de turno, do jogador a jogar
+            Game.Turn = !Game.Turn;
         }
         else
             Console.WriteLine("Movimento inválido.\n");
@@ -46,7 +59,8 @@ class Bishop : Piece
                 // Recebe todas as possiveis movimentações do inimigo e verifica se o rei da equipa fica check 
                 if (friendKing.IsKing_InCheck(board))
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
                 else
@@ -62,7 +76,6 @@ class Bishop : Piece
 
         else
         {
-
             GetAllMoves(piece, possibleMoves, board);
 
             if (IsValidMove(possibleMoves, input_ToPos))
@@ -72,7 +85,8 @@ class Bishop : Piece
 
                 if (friendKing.isCheck)
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
@@ -91,10 +105,12 @@ class Bishop : Piece
                         if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
                             FinishGame_Complete();
                         else
-                            Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                            //Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                            Console.WriteLine("Check.\n");
                     }
                 }
             }
+
             else
                 Print_PossibleMovements(possibleMoves);
         }

@@ -21,6 +21,20 @@ public class Pawn : Piece
 
     }
 
+    public override Piece Clone()
+    {
+        return new Pawn
+        {
+            FirstMove = FirstMove,
+            En_Passant_Enable = En_Passant_Enable,
+            En_Passant_Round = En_Passant_Round,
+            Type = Type,
+            Location = new Location(Location.Row, Location.Col),
+            Team = Team,
+            PlaceHolder = PlaceHolder,
+        };
+    }
+
     public override void SpecialOperation(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
@@ -54,14 +68,15 @@ public class Pawn : Piece
 
                 if (friendKing.IsKing_InCheck(board))
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
                 else
                 {
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
-                    MakePieceMove_NoInfo(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
                     
                     Console.WriteLine($"Peão {pawn.PlaceHolder} recuou com sucesso.\n");
                     SpecialOperation_Enable = false;
@@ -76,8 +91,9 @@ public class Pawn : Piece
                         if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
                             FinishGame_Complete();
                         else
-                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
-                    }
+                            //Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                            Console.WriteLine("Check.\n");
+                    }                    
                 }
             }
             else
@@ -91,8 +107,6 @@ public class Pawn : Piece
     {
         List<string> possibleMoves = new List<string>();
         List<string> en_PassantMoves = new List<string>();
-        List<string> enemyKing_possibleMoves = new List<string>();
-        List<string> enemy_possibleMoves = new List<string>();
 
         Pawn pawn = (Pawn)piece;
         King enemyKing = FindEnemyKing(piece, board);
@@ -111,7 +125,8 @@ public class Pawn : Piece
 
                 if (friendKing.IsKing_InCheck(board))
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
@@ -119,10 +134,11 @@ public class Pawn : Piece
                 {
                     // Faz o movimento da peça e coloca o rei da equipa Não Check
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
-                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
-
+                    
                     if (pawn.FirstMove) pawn.FirstMove = false;
                     friendKing.isCheck = false;
+
+                    MakePieceMove(piece, possibleMoves, fromLocation, toLocation, input_FromPos, input_ToPos, board);
                 }
             }
             else
@@ -147,7 +163,8 @@ public class Pawn : Piece
 
                 if (friendKing.IsKing_InCheck(board))
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    // Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
@@ -173,8 +190,10 @@ public class Pawn : Piece
                             FinishGame_Complete();                            
                         }
                         else
-                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
-                    }                    
+                            //Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                            Console.WriteLine("Check.\n");
+                    }
+                    Game.SaveRound(board, Game.savedRounds);
                 }
             }
             else Print_PossibleMovements(possibleMoves);            
@@ -273,11 +292,14 @@ public class Pawn : Piece
             // Coluna em cima à esquerda está fora do tabuleiro. Só dá para cima e direita
             else
             {
-                nextRightColumnPiece = board[piece.Location.Row - 1, piece.Location.Col + 1];
-                if (nextRightColumnPiece != null && nextRightColumnPiece.Team != piece.Team)
+                if (piece.Location.Row - 1 >= 0 && piece.Location.Col + 1 < board.GetLength(1))
                 {
-                    column = piece.Location.Col + 'A' + 1;
-                    possibleMoves.Add($"{(char)column}{row - 1}");
+                    nextRightColumnPiece = board[piece.Location.Row - 1, piece.Location.Col + 1];
+                    if (nextRightColumnPiece != null && nextRightColumnPiece.Team != piece.Team)
+                    {
+                        column = piece.Location.Col + 'A' + 1;
+                        possibleMoves.Add($"{(char)column}{row - 1}");
+                    }
                 }
             }
         }
@@ -320,13 +342,17 @@ public class Pawn : Piece
 
             // Coluna em baixo à esquerda está fora do tabuleiro. Só dá para baixo e direita
             else
-            {                
-                nextRightColumnPiece = board[piece.Location.Row + 1, piece.Location.Col + 1];
-
-                if (nextRightColumnPiece != null && nextRightColumnPiece.Team != piece.Team)
+            {
+                // Verifica se está dentro dos limites do tabuleiro
+                if (piece.Location.Row + 1 < board.GetLength(0) && piece.Location.Col + 1 < board.GetLength(1))
                 {
-                    column = piece.Location.Col + 'A' + 1;
-                    possibleMoves.Add($"{(char)column}{row + 1}");
+                    nextRightColumnPiece = board[piece.Location.Row + 1, piece.Location.Col + 1];
+
+                    if (nextRightColumnPiece != null && nextRightColumnPiece.Team != piece.Team)
+                    {
+                        column = piece.Location.Col + 'A' + 1;
+                        possibleMoves.Add($"{(char)column}{row + 1}");
+                    }
                 }
             }
         }
@@ -341,25 +367,31 @@ public class Pawn : Piece
         // WHITE TEAM
         if (piece.Team == PieceTeam.White)
         {
-            nextPiece = board[piece.Location.Row - 1, piece.Location.Col];
-            //se a posiçao em cima for null, adiciona posiçao à possibleMove
-            if (nextPiece == null)
+            if (piece.Location.Row - 1 >= 0)
             {
-                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row - 1}");
-                if (piece.FirstMove && board[piece.Location.Row - 2, piece.Location.Col] == null)
-                    possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row - 2}");
+                nextPiece = board[piece.Location.Row - 1, piece.Location.Col];
+                //se a posiçao em cima for null, adiciona posiçao à possibleMove
+                if (nextPiece == null)
+                {
+                    possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row - 1}");
+                    if (piece.FirstMove && board[piece.Location.Row - 2, piece.Location.Col] == null)
+                        possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row - 2}");
+                }
             }
         }
 
         //BLACK TEAM
         else
         {
-            nextPiece = board[piece.Location.Row + 1, piece.Location.Col];
-            if (nextPiece == null)
+            if (piece.Location.Row + 1 < board.GetLength(0))
             {
-                possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
-                if (piece.FirstMove && board[piece.Location.Row + 2, piece.Location.Col] == null)
-                    possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 2}");
+                nextPiece = board[piece.Location.Row + 1, piece.Location.Col];
+                if (nextPiece == null)
+                {
+                    possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 1}");
+                    if (piece.FirstMove && board[piece.Location.Row + 2, piece.Location.Col] == null)
+                        possibleMoves.Add($"{(char)(piece.Location.Col + 'A')}{row + 2}");
+                }
             }
         }
 
@@ -418,7 +450,7 @@ public class Pawn : Piece
         if (Math.Abs(pawn.Location.Row - toLocation.Row) == 2)
         {
             pawn.En_Passant_Enable = true;
-            pawn.En_Passant_Round = Game.Nr_Moves + 1;
+            pawn.En_Passant_Round = Game.Nr_Rounds + 1;
         }
     }
     public bool PawnInYLimits(Pawn pawn, Piece[,] board)
@@ -436,12 +468,12 @@ public class Pawn : Piece
             {
                 if (board[pawn.Location.Row, pawn.Location.Col + 1] != null)
                 {
-                    if (board[pawn.Location.Row, pawn.Location.Col + 1].Type == PieceType.Pawn) { 
+                    if (board[pawn.Location.Row, pawn.Location.Col + 1] is Pawn) { 
                         Pawn rightColumnPawn = (Pawn)board[pawn.Location.Row, pawn.Location.Col + 1];
 
-                        if (rightColumnPawn != null && rightColumnPawn.Type == PieceType.Pawn && rightColumnPawn.Team != pawn.Team)
+                        if (rightColumnPawn.Team != pawn.Team)
                         {
-                            if (rightColumnPawn.En_Passant_Round == Game.Nr_Moves)
+                            if (rightColumnPawn.En_Passant_Round == Game.Nr_Rounds)
                             {
                                 if (rightColumnPawn.En_Passant_Enable)
                                 {
@@ -474,30 +506,33 @@ public class Pawn : Piece
             {
                 if (board[pawn.Location.Row, pawn.Location.Col - 1] != null)
                 {
-                    Pawn leftColumnPawn = (Pawn)board[pawn.Location.Row, pawn.Location.Col - 1];
-
-                    if (leftColumnPawn != null && leftColumnPawn.Type == PieceType.Pawn && leftColumnPawn.Team != pawn.Team)
+                    if (board[pawn.Location.Row, pawn.Location.Col - 1] is Pawn )
                     {
-                        if (leftColumnPawn.En_Passant_Round == Game.Nr_Moves)
+                        Pawn leftColumnPawn = (Pawn)board[pawn.Location.Row, pawn.Location.Col - 1];
+
+                        if (leftColumnPawn.Team != pawn.Team)
                         {
-                            if (leftColumnPawn.En_Passant_Enable)
+                            if (leftColumnPawn.En_Passant_Round == Game.Nr_Rounds)
                             {
-                                if (pawn.Team == PieceTeam.White)
+                                if (leftColumnPawn.En_Passant_Enable)
                                 {
-                                    possibleMoves.Add($"{char.ToUpper((char)(input_FromPos[0] - 1))}{leftColumnPawn.Location.Row}");
-                                    en_PassantMoves.Add($"{char.ToUpper((char)(input_FromPos[0] - 1))}{leftColumnPawn.Location.Row}");
-                                }
-                                else
-                                {
-                                    possibleMoves.Add($"{char.ToUpper((char)(input_FromPos[0] - 1))}{leftColumnPawn.Location.Row + 2}");
-                                    en_PassantMoves.Add($"{char.ToUpper((char)(input_FromPos[0] - 1))}{leftColumnPawn.Location.Row + 2}");
+                                    if (pawn.Team == PieceTeam.White)
+                                    {
+                                        possibleMoves.Add($"{char.ToUpper((char)(input_FromPos[0] - 1))}{leftColumnPawn.Location.Row}");
+                                        en_PassantMoves.Add($"{char.ToUpper((char)(input_FromPos[0] - 1))}{leftColumnPawn.Location.Row}");
+                                    }
+                                    else
+                                    {
+                                        possibleMoves.Add($"{char.ToUpper((char)(input_FromPos[0] - 1))}{leftColumnPawn.Location.Row + 2}");
+                                        en_PassantMoves.Add($"{char.ToUpper((char)(input_FromPos[0] - 1))}{leftColumnPawn.Location.Row + 2}");
+                                    }
                                 }
                             }
-                        }
-                        else
-                        {
-                            leftColumnPawn.En_Passant_Enable = false;
-                            leftColumnPawn.En_Passant_Round = 0;
+                            else
+                            {
+                                leftColumnPawn.En_Passant_Enable = false;
+                                leftColumnPawn.En_Passant_Round = 0;
+                            }
                         }
                     }
                 }

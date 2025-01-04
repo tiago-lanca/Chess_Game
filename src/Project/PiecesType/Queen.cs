@@ -13,7 +13,17 @@ public class Queen : Piece
         : base(pieceType, location, team, placeholder)
     {
     }
-
+    public override Queen Clone()
+    {
+        return new Queen
+        {
+            FirstMove = FirstMove,
+            Type = Type,
+            Location = new Location(Location.Row, Location.Col),
+            Team = Team,
+            PlaceHolder = PlaceHolder,
+        };
+    }
     public override void SpecialOperation(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
@@ -28,23 +38,31 @@ public class Queen : Piece
 
             if (friendKing.IsKing_InCheck(board))
             {
-                Console.WriteLine("Movimento invalido (Rei Check).\n");
+                //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                Console.WriteLine("Movimento inválido.\n");
+
                 // Rei e Rainha retomam às posições anteriores
                 UndoPositions_QueenKing(piece, friendKing, board);
             }
             else
             {
                 Console.WriteLine("Rainha trocou de posição com o rei.\n");
+                Game.Nr_Rounds++;
+
+                //Mudança de turno, do jogador a jogar
+                Game.Turn = !Game.Turn;
 
                 GetAllMoves(piece, possibleMoves, board);
 
+                //Verifica se o rei inimigo está check
                 if (enemyKing.IsKing_InCheck(board))
                 {
                     // Verifica se rei inimigo está checkmate, senao está só check.
                     if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
                         FinishGame_Complete();
                     else
-                        Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                        //Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                        Console.WriteLine("Check.\n");
                 }
             }
         }
@@ -59,7 +77,6 @@ public class Queen : Piece
         King enemyKing = FindEnemyKing(piece, board);
         King friendKing = FindFriendKing(piece, board);
 
-
         if (friendKing.IsKing_InCheck(board))
         {
             GetAllMoves(piece, possibleMoves, board);
@@ -72,7 +89,9 @@ public class Queen : Piece
                 // Recebe todas as possiveis movimentações do inimigo e verifica se o rei da equipa fica check   
                 if (friendKing.IsKing_InCheck(board))
                 {
-                    Console.WriteLine($"Movimento invalido (Rei {friendKing.PlaceHolder} Check).\n");
+                    //Console.WriteLine($"Movimento invalido (Rei {friendKing.PlaceHolder} Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
+
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
@@ -98,7 +117,9 @@ public class Queen : Piece
 
                 if (friendKing.IsKing_InCheck(board))
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
+
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
@@ -116,7 +137,8 @@ public class Queen : Piece
                         if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
                             FinishGame_Complete();
                         else
-                            Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                            //Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                            Console.WriteLine("Check.\n");
                     }                    
                 }
             }

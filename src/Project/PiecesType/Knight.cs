@@ -16,6 +16,16 @@ class Knight : Piece
         : base(pieceType, location, team, placeholder)
     {
     }
+    public override Knight Clone()
+    {
+        return new Knight
+        {
+            Type = Type,
+            Location = new Location(Location.Row, Location.Col),
+            Team = Team,
+            PlaceHolder = PlaceHolder,
+        };
+    }
 
     public override void SpecialOperation(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
@@ -24,7 +34,6 @@ class Knight : Piece
 
         King enemyKing = FindEnemyKing(piece, board);
         King friendKing = FindFriendKing(piece, board);
-
 
         if (isKnight_Isolate(piece, board))
         {
@@ -37,7 +46,8 @@ class Knight : Piece
 
                 if (friendKing.isCheck)
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
@@ -52,34 +62,13 @@ class Knight : Piece
                     {
                         enemyKing.isCheck = true;
 
-
                         // Verifica se rei inimigo está checkmate, senao está só check.
                         if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
-                        {
-                            Player player1 = PlayerList.players.Find(player => player.Name == Game.Player1.Name);
-                            Player player2 = PlayerList.players.Find(player => player.Name == Game.Player2.Name);
-
-                            //Game.FinishGame_Checkmate()
-                            if (Game.Turn == false)
-                            {
-                                Console.WriteLine($"Checkmate. {player2.Name} venceu.\n");
-                                player2.NumVictory++;
-                                player1.NumLoss++;
-                            }
-
-                            else
-                            {
-                                Console.WriteLine($"Checkmate. {player1.Name} venceu.\n");
-                                player1.NumVictory++;
-                                player2.NumLoss++;
-                            }
-                            Game._IsGameInProgress = false;
-                            Game._IsNewGame = true;
-                        }
+                            FinishGame_Complete();
                         else
-                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
-                    }
-
+                            //Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                            Console.WriteLine("Check.\n");
+                    }                            
                 }
             }
             else
@@ -93,13 +82,9 @@ class Knight : Piece
     {
         List<string> possibleMoves = new List<string>();
         List<string> possibleMoves_EnemyKingCheck = new List<string>();
-        List<string> possibleMoves_EnemyKing = new List<string>();
-
 
         King enemyKing = FindEnemyKing(piece, board);
         King friendKing = FindFriendKing(piece, board);
-
-        List<string> enemy_possibleMoves = new List<string>();
 
         if (friendKing.IsKing_InCheck(board))
         {
@@ -114,7 +99,8 @@ class Knight : Piece
                 // Recebe todas as possiveis movimentações do inimigo e verifica se o rei da equipa fica check   
                 if (friendKing.isCheck)
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
                 else
@@ -130,7 +116,6 @@ class Knight : Piece
 
         else
         {
-
             GetAllMoves(piece, possibleMoves, board);
 
             if (IsValidMove(possibleMoves, input_ToPos))
@@ -140,7 +125,8 @@ class Knight : Piece
 
                 if (friendKing.isCheck)
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
@@ -155,34 +141,13 @@ class Knight : Piece
                     {
                         enemyKing.isCheck = true;
 
-
                         // Verifica se rei inimigo está checkmate, senao está só check.
                         if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
-                        {
-                            Player player1 = PlayerList.players.Find(player => player.Name == Game.Player1.Name);
-                            Player player2 = PlayerList.players.Find(player => player.Name == Game.Player2.Name);
-
-                            //Game.FinishGame_Checkmate()
-                            if (Game.Turn == false)
-                            {
-                                Console.WriteLine($"Checkmate. {player2.Name} venceu.\n");
-                                player2.NumVictory++;
-                                player1.NumLoss++;
-                            }
-
-                            else
-                            {
-                                Console.WriteLine($"Checkmate. {player1.Name} venceu.\n");
-                                player1.NumVictory++;
-                                player2.NumLoss++;
-                            }
-                            Game._IsGameInProgress = false;
-                            Game._IsNewGame = true;
-                        }
+                            FinishGame_Complete();
                         else
-                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                            //Console.WriteLine($"{enemyKing.PlaceHolder} Rei em CHECK.\n");
+                            Console.WriteLine("Check.\n");
                     }
-                    
                 }
             }
             else

@@ -10,7 +10,6 @@ public class Piece
     public Location? Location { get; set; }
     public PieceTeam? Team { get; set; }
     public string PlaceHolder { get; set; }
-    public bool isAlive { get; set; } = true;
     public bool SpecialOperation_Enable { get; set; } = true;
     public int Nr_Movements { get; set; } = 0;
     public Piece() { }
@@ -24,6 +23,19 @@ public class Piece
         PlaceHolder = placeholder;
     }
 
+    public virtual Piece Clone() // Criar novas peças no momento do UndoRound (para não substituir Locations)
+    {
+        return new Piece
+        {
+            Type = Type,
+            Location = new Location(Location.Row, Location.Col),
+            Team = Team,
+            PlaceHolder = PlaceHolder,
+            SpecialOperation_Enable = SpecialOperation_Enable,
+            Nr_Movements = Nr_Movements,
+        };
+    }
+
     public virtual void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
 
@@ -34,11 +46,6 @@ public class Piece
 
     }
 
-    /*public virtual List<string> GetAllMoves(Piece piece, List<string> possibleMoves, Piece[,] board)
-    {
-        return possibleMoves;
-    }*/
-
     public virtual List<string> GetMoves_ForCheckKing(Piece piece, List<string> possibleMoves, Piece[,] board)
     {
         return possibleMoves;
@@ -47,7 +54,7 @@ public class Piece
     {
         // Mostra informação de movimentação da peça
         PieceMoved_Info(piece, possibleMoves, toLocation, input_FromPos, input_ToPos, board);
-        piece.Nr_Movements++;
+        piece.Nr_Movements++;        
 
         // Altera a peça de localização, e coloca null onde estava anteriormente
         board[toLocation.Row, toLocation.Col] = piece;
@@ -55,11 +62,11 @@ public class Piece
         board[toLocation.Row, toLocation.Col].Location.Row = toLocation.Row;
         board[fromLocation.Row, fromLocation.Col] = null;
 
-        Game.Nr_Moves++;
+        //Aumenta +1 numero de rondas do jogo
+        Game.Nr_Rounds++;
 
         //Mudança de turno, do jogador a jogar
-        //Game.Turn = !Game.Turn;
-        
+        Game.Turn = !Game.Turn;
     }
 
     public void MakePieceMove_NoInfo(Piece piece, List<string> possibleMoves, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
@@ -72,10 +79,10 @@ public class Piece
         board[toLocation.Row, toLocation.Col].Location.Row = toLocation.Row;
         board[fromLocation.Row, fromLocation.Col] = null;
 
-        Game.Nr_Moves++;
+        Game.Nr_Rounds++;
 
         //Mudança de turno, do jogador a jogar
-        //Game.Turn = !Game.Turn;
+        Game.Turn = !Game.Turn;
 
     }
 
@@ -85,14 +92,14 @@ public class Piece
     public void Print_PossibleMovements(List<string> possibleMoves)
     {
         Console.WriteLine("Movimento inválido.\n");
-        Console.Write("Possiveis Movimentações: ");
+        /*Console.Write("Possiveis Movimentações: ");
         if (possibleMoves.Count == 0) Console.Write("N/A\n");
         else
         {
             foreach (var move in possibleMoves)
                 Console.Write($"{move} ");
             Console.WriteLine("\n");
-        }
+        }*/
     }
 
     public virtual void PieceMoved_Info(Piece piece, List<string> possibleMoves, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
@@ -102,7 +109,6 @@ public class Piece
         if (toPositionPiece != null)
         {
             Console.WriteLine($"Peça {toPositionPiece.PlaceHolder} capturada.\n");
-            toPositionPiece.isAlive = false;
         }
         else
             Console.WriteLine($"{piece.PlaceHolder} movimentada com sucesso.\n");

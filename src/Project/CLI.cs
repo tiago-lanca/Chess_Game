@@ -12,12 +12,6 @@ namespace Chess_Game.src.Project
         {
             string input;
 
-            //printBoard(board, letters, numbers);
-            //findPiece(board, "BP8", letters);
-            //movePiece(board, "C7", "C5");
-
-            //Player.DeserializePlayerData(); // Carrega lista de jogadores no inicio da aplicação
-
             //AppDomain.CurrentDomain.ProcessExit += OnProcessExit; // Autosave ao sair da aplicação
 
             do
@@ -27,7 +21,7 @@ namespace Chess_Game.src.Project
                 Console.WriteLine();
                 CheckCommand(input);
             }
-            while (input != " ");
+            while (!string.IsNullOrWhiteSpace(input));
 
             void CheckCommand(string command)
             {
@@ -95,12 +89,18 @@ namespace Chess_Game.src.Project
                         else Console.WriteLine("Instrução inválida.\n");
                         break;
 
-                    case "Xclear": // Limpar Consola
+                    case "XUndo": // Voltar uma jogada atrás
+                        Game.Undo_Round();
+                        break;
+
+                    case "XClear": // Limpar Consola
                         Console.Clear();
                         break;
 
                     default:
-                        Console.WriteLine("Instrução inválida.\n");
+                        if (string.IsNullOrWhiteSpace(command)) break;
+                        else
+                            Console.WriteLine("Instrução inválida.\n");
                         break;
                 }
             }

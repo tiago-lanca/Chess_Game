@@ -16,6 +16,18 @@ class Rook : Piece
         : base(type, location, team, placeholder)
     {
     }
+
+    public override Rook Clone()
+    {
+        return new Rook
+        {
+            FirstMove = FirstMove,
+            Type = Type,
+            Location = new Location(Location.Row, Location.Col),
+            Team = Team,
+            PlaceHolder = PlaceHolder,
+        };
+    }
     public override void SpecialOperation(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
@@ -32,10 +44,11 @@ class Rook : Piece
             {
                 Testing_PiecePosition(piece, fromLocation, toLocation, board);
 
-
                 if (friendKing.IsKing_InCheck(board))
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
+
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
@@ -53,12 +66,12 @@ class Rook : Piece
                     GetAllMoves(piece, possibleMoves, board);
                     if (enemyKing.IsKing_InCheck(board))
                     {
-
                         // Verifica se rei inimigo está checkmate, senao está só check.
                         if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
                             FinishGame_Complete();
                         else
-                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                            //Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                            Console.WriteLine("Check.\n");
                     }
                 }
             }
@@ -72,8 +85,6 @@ class Rook : Piece
     public override void MovePiece(Piece piece, Location fromLocation, Location toLocation, string input_FromPos, string input_ToPos, Piece[,] board)
     {
         List<string> possibleMoves = new List<string>();
-        List<string> enemyKing_possibleMoves = new List<string>(); ;
-        List<string> enemy_possibleMoves = new List<string>();
 
         King enemyKing = FindEnemyKing(piece, board);
         King friendKing = FindFriendKing(piece, board);
@@ -90,11 +101,11 @@ class Rook : Piece
                 Testing_PiecePosition(piece, fromLocation, toLocation, board);
 
                 // Recebe todas as possiveis movimentações do inimigo e verifica se o rei da equipa fica check
-                
-
                 if (friendKing.IsKing_InCheck(board))
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
+
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
@@ -118,10 +129,11 @@ class Rook : Piece
             {
                 Testing_PiecePosition(piece, fromLocation, toLocation, board);
 
-
                 if (friendKing.IsKing_InCheck(board))
                 {
-                    Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    //Console.WriteLine("Movimento invalido (Rei Check).\n");
+                    Console.WriteLine("Movimento inválido.\n");
+
                     // Peça retoma à posição que estava antes
                     Undo_PiecePosition(piece, fromLocation, toLocation, board);
                 }
@@ -141,7 +153,8 @@ class Rook : Piece
                         if (IsEnemyKing_Checkmate(enemyKing, EnemyKing_MovesAvoidingCheckmate(enemyKing, board), board))
                             FinishGame_Complete();
                         else
-                            Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                            //Console.WriteLine($"{enemyKing.PlaceHolder} em CHECK.\n");
+                            Console.WriteLine("Check.\n");
                     }                    
                 }
             }
